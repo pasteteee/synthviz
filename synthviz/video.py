@@ -29,6 +29,8 @@ from .visuals.captions import Captions, OUTRO_LINES
 
 SCENES = dict(S1)
 SCENES.update({c.name: c for c in (Terrain, City, Pixel, Waves, Galaxy)})
+from .visuals.scenes3 import SCENES3  # noqa: E402  aurora, lava, ocean, knot, petals
+SCENES.update(SCENES3)
 PIXELATE = {"chiptune": 6}
 HUE_RANGE = 0.14          # how far chords may push the world's hue
 STYLE_NAMES = {"dnb_liquid": "liquid dnb", "dnb_energy": "drum & bass", "ambient_space": "space ambient",
