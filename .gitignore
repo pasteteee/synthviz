@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+out*/
+release/
+*.wav
+*.mp4
+!synthviz/samples/**/*.wav
+!synthviz/samples/**/*.WAV
+.tmp/
+third_party/surge/lib/
+third_party/surge/data
