@@ -160,7 +160,10 @@ def avatar(path, size=1024):
     img = glow(img)
     # monogram NT
     tl = text_layer((S, S), [("NT", OSWALD, int(S * 0.24), (cx, cy + S * 0.31), "mm", (1, 1, 1))])
-    img = img * (1 - tl * 0.95) + tl * 1.6 + glow(tl * hsv(0.9, 0.6, 1.0)[None, None], (6, 20), (1.0, 0.6)) - tl
+    shadow = np.clip(gaussian_filter(tl[..., 0] if tl.ndim == 3 else tl, S * 0.018) * 2.2, 0, 1)
+    img = img * (1 - 0.85 * shadow)[..., None]                       # dark halo so the letters read on the sun
+    img = img + glow(tl * hsv(0.52, 0.8, 1.0)[None, None], (5, 18, 45), (1.2, 0.8, 0.5))   # cyan neon
+    img = img * (1 - tl) + tl * 2.2
     # circular vignette (youtube crops a circle)
     img *= np.clip(1.25 - r * 1.6, 0, 1)[..., None] ** 0.6
     Image.fromarray(tonemap(img)).resize((800, 800), Image.LANCZOS).save(path)

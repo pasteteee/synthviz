@@ -16,6 +16,10 @@ bash install_deps.sh            # apt: ffmpeg, LSP plugins; pip: requirements.tx
 bash third_party/surge/install.sh   # Surge XT presets (recommended; or SURGE_PREBUILT=<dir with lib/ and data/>)
 export PYTHONPATH=.
 ```
+In this project a prebuilt Surge is at `/mnt/project-files/synthviz/research/surge`:
+`SURGE_PREBUILT=/mnt/project-files/synthviz/research/surge bash third_party/surge/install.sh` (seconds, no build).
+Never point Surge data at a network mount (startup goes from 0.3 s to ~90 s); the installer copies it locally.
+
 The channel history lives in `channel/history.json` inside the repo. Pull before rendering and commit it after,
 otherwise the uniqueness check cannot see earlier videos.
 
@@ -33,7 +37,10 @@ What it guarantees per video:
 - **Different look:** `visuals.variety.plan_batch` gives each video a new world (neon_drive, deep_space, arcade,
   liquid, rave, canyon), a new pair of mini-games and a different outro, avoiding neighbours and the history.
 
-Fast dry run (audio only, ~40 s per track): add `--audio-only`. One video takes ~9 min on 4 cores.
+Fast dry run (audio only, ~40 s per track): add `--audio-only`. One video takes ~9 min on 4 cores, so run
+long batches in the background (`nohup ... > log.txt 2>&1 &`) and wait for the `ALLDONE` line.
+If the user gives feedback on a sound (kick, lead, bass), change the engine, rerun a short `--audio-only` check,
+then commit to the repo so the next batch uses it.
 
 ## 3. Outputs (in `--out`)
 - `NNN_style_seed.mp4` + `.json` (all musical and visual choices, texts)
