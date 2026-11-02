@@ -670,6 +670,8 @@ class Dancer(Insert):
 
 
 INSERTS = {c.name: c for c in (Runner, Bounce, Breakout, Shooter, Dancer)}
+from .scenes_hi import HI_INSERTS  # noqa: E402  (hi-res screens: chat, tape, keys)
+INSERTS.update(HI_INSERTS)
 
 
 # ---------------------------------------------------------------- compositing
@@ -716,9 +718,12 @@ class ArcadeLayer:
         k = min(on, off)
         if k <= 0:
             return 0.0
-        self.cv.clear()
-        ins.draw(self.cv, t)
-        up = np.repeat(np.repeat(self.cv.a, SCALE, 0), SCALE, 1) * self.scan
+        if getattr(ins, "hires", False):
+            up = ins.draw_hi(t).astype(np.float32)
+        else:
+            self.cv.clear()
+            ins.draw(self.cv, t)
+            up = np.repeat(np.repeat(self.cv.a, SCALE, 0), SCALE, 1) * self.scan
         h, w = up.shape[:2]
         # CRT power on/off: a bright line that opens vertically
         vis_h = max(4.0, h * k ** 1.5)

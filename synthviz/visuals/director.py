@@ -69,6 +69,9 @@ def pick_insert(F, s, pool, used, rng):
         "breakout": 1.0 + 2.0 * (st["four"] > 0.85) + 0.2 * st["dens"],
         "shooter": 1.0 + 0.4 * st["snare"] + 0.3 * st["dens"] - (1.0 if st["four"] > 0.85 else 0.0),
         "dancer": 1.5 + 2.5 * (st["four"] > 0.85),          # Bit dances wherever there is a straight beat
+        "chat": 1.5 + 1.5 * min(0.6, st["mdur"]),           # slow melodies read like a conversation
+        "tape": 1.6,
+        "keys": 1.5 + 0.3 * min(4.0, st["dens"]),
     }
     cand = [g for g in pool if g not in used] or pool
     for g in cand:
