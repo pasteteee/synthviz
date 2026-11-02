@@ -340,7 +340,10 @@ class Keys(HiInsert):
                 cx, kw, black = self.key_x(n["p"])
                 c = col_f(n["p"])
                 w2 = kw * (0.36 if lane == "bass" else 0.42)
-                d.rounded_rectangle((cx - w2, max(0, y_end), cx + w2, min(self.KY, y_hit)), radius=int(w2),
+                ya, yb = max(0.0, min(y_end, y_hit)), min(float(self.KY), max(y_end, y_hit))
+                if yb - ya < 3:
+                    yb = ya + 3
+                d.rounded_rectangle((cx - w2, ya, cx + w2, yb), radius=max(1, min(int(w2), int((yb - ya) / 2))),
                                     fill=rgb(c, 0.95), outline=rgb(c, 1.4), width=2)
                 if n["t"] <= t < n["t"] + max(0.12, n["dur"]):
                     active[int(round(n["p"]))] = c
