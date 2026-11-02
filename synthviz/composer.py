@@ -502,9 +502,9 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     cevents[-1] = ChordEvent(last.start, last.dur, tonic_ch, theory.voice_chord(tonic_ch, cevents[-2].voicing, 50, 74, 4))
     spb = 60.0 / bpm
     dur = total_bars * 4 * spb + 2.0
-    if title is None:
-        w = style["words"]
-        title = f"{rng.choice(w)} {rng.choice(('DREAM', 'PULSE', 'ECHO', 'RUNNER', 'WAVES', 'SIGNAL', 'CITY', 'HEART', 'GLOW', 'MOTION'))}"
+    w = style["words"]
+    auto_title = f"{rng.choice(w)} {rng.choice(('DREAM', 'PULSE', 'ECHO', 'RUNNER', 'WAVES', 'SIGNAL', 'CITY', 'HEART', 'GLOW', 'MOTION'))}"
+    title = title or auto_title   # rng is consumed either way, so a custom title never changes the music
     song = Song(style_name, title, bpm, k, sections, cevents, dur)
     sec_by = {s.name: s for s in sections}
     beat_t = lambda b: b * spb

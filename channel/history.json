@@ -1,1 +1,123 @@
-[]
+[
+ {
+  "file": "001_hardstyle_577249.mp4",
+  "style_id": "hardstyle",
+  "seed": 577249,
+  "title": "INFERNO RUNNER",
+  "key": "F# minor",
+  "lead_patch": "surge:Pet",
+  "bass_patch": "kick tail (hs_euphoric)",
+  "kick": "hs_euphoric",
+  "world": "canyon",
+  "inserts": [
+   "shooter",
+   "runner"
+  ],
+  "outro": "question",
+  "fingerprint": "hardstyle|surge:Pet|kick tail (hs_euphoric)|hs_euphoric|F# minor|axis_minor",
+  "hook": "e44bcf3abb5f",
+  "surge": {
+   "lead": "patches_factory/Leads/Pet",
+   "pad": "patches_3rdparty/Stefan Singer/Pads/Trance Pad 2",
+   "counter": "patches_factory/Leads/Fairy"
+  }
+ },
+ {
+  "file": "002_acid_919308.mp4",
+  "style_id": "acid",
+  "seed": 919308,
+  "title": "TOXIC CITY",
+  "key": "E dorian",
+  "lead_patch": "surge:Journey To The Center Of The Surge",
+  "bass_patch": "acid_303",
+  "kick": "techno",
+  "world": "arcade",
+  "inserts": [
+   "bounce",
+   "runner"
+  ],
+  "outro": "rate",
+  "fingerprint": "acid|surge:Journey To The Center Of The Surge|acid_303|techno|E dorian|minor_plagal",
+  "hook": "c2c879519d1c",
+  "surge": {
+   "lead": "patches_3rdparty/Jacky Ligon/Leads/Journey To The Center Of The Surge",
+   "alt": "patches_factory/Leads/Butter",
+   "chords": "patches_3rdparty/Giana Brotherz/Organs/Charmy Organ",
+   "pad": "patches_factory/Pads/Well",
+   "counter": "patches_factory/Leads/Somewhere MW"
+  }
+ },
+ {
+  "file": "003_dnb_liquid_50183.mp4",
+  "style_id": "dnb_liquid",
+  "seed": 50183,
+  "title": "BLUE CITY",
+  "key": "A dorian",
+  "lead_patch": "vox_lead",
+  "bass_patch": "@reese",
+  "kick": "punch",
+  "world": "deep_space",
+  "inserts": [
+   "breakout",
+   "bounce"
+  ],
+  "outro": "tomorrow",
+  "fingerprint": "dnb_liquid|vox_lead|@reese|punch|A dorian|liquid_dnb_2",
+  "hook": "b70ff7183196",
+  "surge": {
+   "alt": "patches_factory/Plucks/Wire",
+   "chords": "patches_3rdparty/Malfunction/Bells/Impact",
+   "pad": "patches_3rdparty/Slowboat/Atmospheres/Harmonic Blast",
+   "counter": "patches_3rdparty/Landosonic/Keys/Intrication 1"
+  }
+ },
+ {
+  "file": "004_rawstyle_80516.mp4",
+  "style_id": "rawstyle",
+  "seed": 80516,
+  "title": "HAVOC HEART",
+  "key": "C# minor",
+  "lead_patch": "hoover",
+  "bass_patch": "kick tail (hs_raw)",
+  "kick": "hs_raw",
+  "world": "rave",
+  "inserts": [
+   "runner",
+   "bounce"
+  ],
+  "outro": "replay",
+  "fingerprint": "rawstyle|hoover|kick tail (hs_raw)|hs_raw|C# minor|dark_descent",
+  "hook": "4b3faab39b9a",
+  "surge": {
+   "alt": "patches_factory/Polysynths/Tarnce",
+   "arp": "patches_factory/Plucks/Square Pop",
+   "counter": "patches_3rdparty/Inigo Kennedy/Keys/Thoughts 7"
+  }
+ },
+ {
+  "file": "005_dnb_energy_805693.mp4",
+  "style_id": "dnb_energy",
+  "seed": 805693,
+  "title": "SHOCK CITY",
+  "key": "B minor",
+  "lead_patch": "surge:Icy Pluck",
+  "bass_patch": "@neuro",
+  "kick": "punch",
+  "world": "neon_drive",
+  "inserts": [
+   "shooter",
+   "breakout"
+  ],
+  "outro": "question",
+  "fingerprint": "dnb_energy|surge:Icy Pluck|@neuro|punch|B minor|dark_descent",
+  "hook": "cc7bbecb4166",
+  "surge": {
+   "lead": "patches_3rdparty/Zoozither/Plucks/Icy Pluck",
+   "alt": "patches_factory/Polysynths/Dirty Hole",
+   "chords": "patches_3rdparty/Jacky Ligon/Plucks/Porta Mod",
+   "pad": "patches_3rdparty/Bluelight/Pads/Obie",
+   "arp": "patches_factory/Plucks/Nice Pluck 2",
+   "counter": "patches_3rdparty/Psiome Send Sound/Synths/Symbiosis"
+  }
+ }
+]

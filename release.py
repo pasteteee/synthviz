@@ -97,6 +97,26 @@ def texts(meta, rng):
 
 
 # ------------------------------------------------------------------ uniqueness
+TITLE_A = ["NEON", "VOLT", "CRIMSON", "ORBIT", "VELVET", "FERAL", "GOLDEN", "STATIC", "MIDNIGHT", "HOLLOW", "SOLAR",
+           "LUNAR", "PHANTOM", "CHROME", "WILD", "SILENT", "ELECTRIC", "SAVAGE", "CRYSTAL", "ATOMIC", "INFINITE", "SHADOW",
+           "SONIC", "ULTRA", "NOVA", "TITAN", "COBALT", "RUBY", "ARCTIC", "MOLTEN"]
+TITLE_B = ["DRIFT", "RUSH", "SKYLINE", "EMPIRE", "PROTOCOL", "MIRAGE", "VORTEX", "HORIZON", "OVERDRIVE", "RIOT", "SPIRAL",
+           "RITUAL", "COMET", "PARADOX", "STORM", "FRONTIER", "AFTERGLOW", "SURGE", "VERTIGO", "CIRCUIT", "LEGACY", "FEVER",
+           "ZENITH", "TEMPLE", "MACHINE", "ANTHEM", "CASCADE", "IGNITION", "VELOCITY", "DYNASTY"]
+
+
+def fresh_title(title, history_titles, rng):
+    """Keep the engine's title unless one of its words was used in the last 30 titles."""
+    recent = {w for t in history_titles[-30:] for w in str(t).split()}
+    if title and not (set(title.split()) & recent):
+        return title
+    for _ in range(200):
+        t = f"{rng.choice(TITLE_A)} {rng.choice(TITLE_B)}"
+        if not (set(t.split()) & recent):
+            return t
+    return title
+
+
 def fingerprint(ev):
     return "|".join(str(ev.get(k)) for k in ("style_id", "lead_patch", "bass_patch", "kick", "key", "prog_name"))
 
@@ -178,6 +198,8 @@ def main():
                 print(f"  reject {style} s{seed}: fp_dup={fp in fps_seen} hook_dup={hs in hooks_seen} in_key={ik:.2f}")
                 continue
             break
+        song.title = fresh_title(song.title, [h.get("title") for h in history] + [m["title"] for m in made], rng)
+        song.events["title"] = song.title
         fps_seen.add(fp); hooks_seen.add(hs); titles_seen.add(song.title)
         name = f"{base_n + j + 1:03d}_{style}_{seed}"
         path = out / f"{name}.mp4"
