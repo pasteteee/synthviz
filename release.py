@@ -29,9 +29,9 @@ from synthviz import harmony  # noqa: E402
 # ------------------------------------------------------------------ texts (international, English)
 GENRE = {"synthwave": "Synthwave", "dnb_liquid": "Liquid DnB", "dnb_energy": "Drum & Bass", "hardstyle": "Hardstyle",
          "rawstyle": "Rawstyle", "trance": "Trance", "acid": "Acid Techno", "chiptune": "Chiptune",
-         "ambient_space": "Space Ambient", "future_bass": "Future Bass", "heavy_bass": "Bass House"}
+         "ambient_space": "Space Ambient", "future_bass": "Future Bass", "heavy_bass": "Bass House", "jerk": "Jerk"}
 EMOJI = {"synthwave": "🌆", "dnb_liquid": "🌊", "dnb_energy": "⚡", "hardstyle": "🔥", "rawstyle": "💀", "trance": "✨",
-         "acid": "🧪", "chiptune": "👾", "ambient_space": "🪐", "future_bass": "💜", "heavy_bass": "🔊"}
+         "acid": "🧪", "chiptune": "👾", "ambient_space": "🪐", "future_bass": "💜", "heavy_bass": "🔊", "jerk": "💎"}
 TAGS = {
     "synthwave": ["synthwave", "retrowave", "outrun", "80s", "neon"],
     "dnb_liquid": ["dnb", "liquiddnb", "drumandbass", "chill", "liquid"],
@@ -44,6 +44,7 @@ TAGS = {
     "ambient_space": ["ambient", "space", "relax", "cosmos", "chillout"],
     "future_bass": ["futurebass", "808", "edm", "melodic", "chords"],
     "heavy_bass": ["basshouse", "bass", "growl", "edm", "dubstep"],
+    "jerk": ["jerk", "jerkbeat", "hyperpop", "808", "typebeat"],
 }
 COMMON_TAGS = ["electronicmusic", "musicvisualizer", "synth", "producer", "shorts"]
 HOOKS = {
@@ -58,6 +59,7 @@ HOOKS = {
     "ambient_space": ["to drift through space", "zero gravity", "for deep focus"],
     "future_bass": ["that hits different at 2am", "with chords that bend", "808 + supersaws"],
     "heavy_bass": ["with a bass you can feel", "filthy growl drop", "turn your speakers up"],
+    "jerk": ["that makes you bounce", "sparkly bells + 808 slides", "pure jerk energy"],
 }
 QUESTIONS = ["Drop 1 or drop 2? 👇", "Rate the drop 1–10 👇", "Which part got stuck in your head? 👇",
              "What genre should I make next? 👇", "Did you catch the switch in the second drop? 👇",

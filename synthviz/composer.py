@@ -156,6 +156,18 @@ STYLES = {
         gate=0.0, swing=0.0, target_s=44,
         words=("SUGAR", "CANDY", "BLOOM", "PRISM", "HALO", "PASTEL", "KAWAII", "CLOUD"),
     ),
+    "jerk": dict(
+        label="Jerk", bpm=(150, 165), scales=["major", "minor", "dorian", "lydian"],
+        progs=["royal_road", "sad_axis", "dreamy_maj7", "axis_major"], bars_per_chord=1,
+        lead=["bell_fm", "kalimba", "music_box", "future_pluck", "chip_pulse12"], lead_char=["playful", "wild"],
+        counter=["kalimba", "bell_fm", "music_box"],
+        bass=[("@808", "trap808")], sub=False, bass_drive=0.9,
+        pad=["shimmer_pad", "glass_pad", None], glide_chords=0.6, chords_inst=["future_pluck", None],
+        arp=(["music_box", "kalimba", "bell_fm"], ["up", "updown", "converge"], 0.25),
+        drums="jerk", kick="trap", snare="trap", perc=["snap"], reverb=(2.4, 0.3), sidechain=0.6,
+        hook="jerk", gate=0.0, swing=0.0, target_s=44,
+        words=("JERK", "BOUNCE", "GLITTER", "SPARKLE", "HYPER", "CANDY", "DIAMOND", "SWAG"),
+    ),
 }
 
 # stem levels in LUFS-S relative to the kick, by genre family (research 4.2)
@@ -169,7 +181,7 @@ LEVELS = {
     "sw":   {"kick": 0, "bass": -3, "snare": -4, "lead": -5, "chords": -10, "pad": -10, "hats": -15, "arp": -11, "counter": -10, "perc": -15},
 }
 FAMILY = {"hardstyle": "hs", "rawstyle": "hs", "heavy_bass": "bass", "dnb_energy": "dnb", "dnb_liquid": "dnb",
-          "future_bass": "fb", "synthwave": "sw", "trance": "sw", "acid": "sw", "chiptune": "sw", "ambient_space": "sw"}
+          "future_bass": "fb", "jerk": "fb", "synthwave": "sw", "trance": "sw", "acid": "sw", "chiptune": "sw", "ambient_space": "sw"}
 # master high shelf (+2.5 dB x this at 6 kHz); hardstyle is kept darker so the kick carries the energy
 BRIGHT = {"hs": 0.0, "bass": 0.6, "dnb": 0.8, "fb": 1.0, "sw": 1.0}
 LEAD_ROLE = None   # force a Surge lead role, e.g. "brasslead" for calm melodic tracks
@@ -315,6 +327,18 @@ def _drum_bar(kind, bis, sec, rng):
             add("perc", [3, 11], 0.4)
         elif light or "hats" in roles:
             add("hat", list(range(0, 16, 4)), 0.35)
+    elif kind == "jerk":     # jerk: bouncy syncopated 808 kicks, claps on 2 and 4, skittering 16th hats + rolls
+        if full or light:
+            pats = [[0, 3, 6, 10], [0, 3, 8, 11, 14], [0, 6, 7, 10], [0, 3, 10, 13]]
+            add("kick", pats[bis % len(pats)] if full else [0], 0.95, 0.0)
+        if full:
+            add("clap", [4, 12], 1.0, 0.0)
+            add("hat", [s_ for s_ in range(16) if s_ % 2 == 0 or rng.random() < 0.55], 0.38, 0.15)
+            add("hat_roll", [6, 14] if bis % 2 else [14], 0.5)
+            add("hat_o", [10] if bis % 2 == 0 else [2], 0.35)
+            add("perc", [s_ for s_ in (5, 13) if rng.random() < 0.5], 0.4)
+        elif light or "hats" in roles:
+            add("hat", list(range(0, 16, 2)), 0.35)
     elif kind == "halftime_hard":   # DnB groove switch: heavy half-time
         add("kick", [0, 3, 10] if bis % 2 == 0 else [0, 6, 10, 11], 1.0, 0.0)
         add("snare", [8], 1.0, 0.0)
@@ -542,8 +566,8 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     mrng = random.Random(mel_seed)
     use_hook = mrng.random() < 0.9
     # melody mode: genre hook or a slow flowing lead (long gliding notes)
-    p_flow = {"dnb_liquid": 0.6, "synthwave": 0.45, "trance": 0.4, "future_bass": 0.35, "ambient_space": 0.8}.get(style_name, 0.2)
-    mel_family = MELODY_MODE or ("flow" if mrng.random() < p_flow else style["family"])
+    p_flow = {"jerk": 0.0, "dnb_liquid": 0.6, "synthwave": 0.45, "trance": 0.4, "future_bass": 0.35, "ambient_space": 0.8}.get(style_name, 0.2)
+    mel_family = MELODY_MODE or ("flow" if mrng.random() < p_flow else style.get("hook", style["family"]))
     hook_lo = 62 if lead_lo == 62 else 69   # drop lead around C5-C6
 
     def melody_for(start_bar, variant):
@@ -680,7 +704,7 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     if surge.available() and style.get("drums") != "chip":
         reg = hook_lo + 7
         for role, prob, kw in (("lead", 0.85, dict(register=reg)), ("alt", 0.8, dict(register=reg)),
-                               ("big", 0.0 if style_name in ("dnb_liquid", "synthwave", "chiptune") else 0.85, dict(register=reg)),
+                               ("big", 0.0 if style_name in ("dnb_liquid", "synthwave", "chiptune", "jerk") else 0.85, dict(register=reg)),
                                ("chords", 0.7, dict(register=64)), ("pad", 0.6, dict(register=60, sustain_min=0.6)),
                                ("arp", 0.6, dict(register=72)), ("counter", 0.5, dict(register=lead_lo))):
             if srng.random() < prob:

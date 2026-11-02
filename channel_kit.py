@@ -23,7 +23,7 @@ INTER = str(FONTS / "Inter-SemiBold.otf")
 GENRE_RU = {
     "synthwave": "SYNTHWAVE", "dnb_liquid": "LIQUID DNB", "dnb_energy": "DRUM & BASS",
     "hardstyle": "HARDSTYLE", "trance": "TRANCE", "acid": "ACID", "chiptune": "CHIPTUNE",
-    "ambient_space": "SPACE AMBIENT", "future_bass": "FUTURE BASS", "rawstyle": "RAWSTYLE", "heavy_bass": "BASS HOUSE",
+    "ambient_space": "SPACE AMBIENT", "future_bass": "FUTURE BASS", "rawstyle": "RAWSTYLE", "heavy_bass": "BASS HOUSE", "jerk": "JERK",
 }
 TAGS = {
     "synthwave": "#synthwave #retrowave #outrun #80s #neon",

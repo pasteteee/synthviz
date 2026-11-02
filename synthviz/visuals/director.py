@@ -38,6 +38,7 @@ STYLE_WORLDS = {
     "trance": ["deep_space", "liquid", "rave", "aurora", "moonlight"],
     "acid": ["rave", "arcade", "lava_lamp"],
     "chiptune": ["arcade"],
+    "jerk": ["rave", "lava_lamp", "moonlight", "arcade", "neon_drive"],
     "ambient_space": ["deep_space", "liquid", "aurora", "ocean", "moonlight"],
     "future_bass": ["liquid", "neon_drive", "rave", "moonlight", "ocean"],
     "heavy_bass": ["rave", "deep_space", "canyon", "lava_lamp"],

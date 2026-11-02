@@ -65,14 +65,14 @@ ALLOW = {
     "brasslead": {"_": SOFT_BRASS},
     "lead": {"hs": BIG_SAWS, "rawstyle": RAW_LEADS, "bass": SYNC_LEADS + FB_LEADS[:3], "dnb": SYNC_LEADS + PLUCKS[:6],
              "dnb_liquid": KEYS + PLUCKS[:6] + FB_LEADS[:2], "fb": FB_LEADS + BIG_SAWS[:4], "sw": RETRO_LEADS,
-             "trance": BIG_SAWS, "acid": SYNC_LEADS},
+             "trance": BIG_SAWS, "acid": SYNC_LEADS, "jerk": PLUCKS + KEYS[:3]},
     "big": {"_": BIG_SAWS},
     "chords": {"fb": STABS, "sw": KEYS + RETRO_LEADS[5:], "dnb": KEYS + PLUCKS, "_": STABS + PLUCKS[:5]},
     "arp": {"_": PLUCKS},
     "counter": {"_": PLUCKS + KEYS},
 }
 FAMILY_OF = {"hardstyle": "hs", "rawstyle": "rawstyle", "heavy_bass": "bass", "dnb_energy": "dnb", "dnb_liquid": "dnb_liquid",
-             "future_bass": "fb", "synthwave": "sw", "trance": "trance", "acid": "acid", "ambient_space": "sw"}
+             "future_bass": "fb", "jerk": "jerk", "synthwave": "sw", "trance": "trance", "acid": "acid", "ambient_space": "sw"}
 USED: set = set()          # presets already used (fill from the channel history to avoid repeats)
 _SURGE_SR = 48000
 
