@@ -113,97 +113,133 @@ def best_frame(video, dur, tmp, prev_sigs):
     return im
 
 
-# ---------------------------------------------------------------- avatar
+# ---------------------------------------------------------------- brand
+CHANNEL_NAME = "RAVE.EXE"
+TAGLINE = "SYNTH MUSIC YOU CAN SEE  •  HARDSTYLE · DNB · SYNTHWAVE"
+
+# the mascot "Bit" (same robot that runs and dances in the videos), 24x24 pixel head
+BIT_HEAD = [
+    "...........aa...........",
+    "...........aa...........",
+    "..........a..a..........",
+    "...........aa...........",
+    "...........bb...........",
+    "....tttttttttttttttt....",
+    "...tttttttttttttttttt...",
+    "..hhbbbbbbbbbbbbbbbbhh..",
+    ".hhhbbbbbbbbbbbbbbbbhhh.",
+    ".hhhbbddddddddddddbbhhh.",
+    ".hhhbdddddddddddddddbhhh",
+    ".hhhbddeeeddddeeeddbhhh.",
+    ".hhhbddeeeddddeeeddbhhh.",
+    ".hhhbdddddddddddddddbhhh",
+    ".hhhbbddddddddddddbbhhh.",
+    "..hhbbbbbbbbbbbbbbbbhh..",
+    "....bbbbbbmmmmbbbbbb....",
+    "....bbbbbbbbbbbbbbbb....",
+    ".....bbbbbbbbbbbbbb.....",
+    ".......cccccccccc.......",
+    "......cccccccccccc......",
+]
+
+
+def _pixels(rows, cols, cell, W, H, ox, oy):
+    """Draw ASCII pixel art (cols: char -> rgb) into a float image of size (H, W)."""
+    img = np.zeros((H, W, 3), np.float32)
+    for j, r in enumerate(rows):
+        for i, ch in enumerate(r):
+            if ch in cols:
+                x0, y0 = int(ox + i * cell), int(oy + j * cell)
+                img[max(0, y0):max(0, y0 + cell - 2), max(0, x0):max(0, x0 + cell - 2)] = cols[ch]
+    return img
+
+
 def avatar(path, size=1024):
+    """Bit's head with headphones on a neon stage: readable even at 48 px in a circle."""
     S = size
     y, x = np.mgrid[0:S, 0:S].astype(np.float32)
     cx, cy = S / 2, S / 2
-    img = np.zeros((S, S, 3), np.float32)
-    # deep space background
     r = np.hypot(x - cx, y - cy) / S
-    img += hsv(0.72, 0.8, 0.10) * np.exp(-r * 2.5)[..., None]
-    rng = np.random.default_rng(3)
-    for _ in range(260):
-        sx, sy = rng.uniform(0, S, 2)
-        img[int(sy), int(sx)] += rng.uniform(0.3, 1.2)
-    # retro sun with slits, in a circle
-    R = S * 0.30
-    sun_c = (cx, cy - S * 0.02)
-    d = np.hypot(x - sun_c[0], y - sun_c[1])
-    inside = d < R
-    tgrad = np.clip((y - (sun_c[1] - R)) / (2 * R), 0, 1)
-    col = (hsv(0.13, 0.85, 1.0)[None, None] * (1 - tgrad[..., None]) + hsv(0.92, 0.85, 1.0)[None, None] * tgrad[..., None])
-    rel = (y - sun_c[1]) / R
-    slit = np.ones_like(y)
-    for k in range(6):
-        y0 = 0.10 + k * 0.155
-        h = 0.025 + k * 0.012
-        slit *= ~((rel > y0) & (rel < y0 + h))
-    img += col * (inside * slit)[..., None] * 0.9
-    # horizon grid below
-    hor = cy + R * 0.95
-    below = y > hor
-    zz = 1.0 / np.maximum((y - hor) / S, 1e-3)
-    gx = np.abs(((x - cx) / S * zz * 0.35) % 1 - 0.5)
-    gz = np.abs((zz * 0.08) % 1 - 0.5)
-    grid = (np.exp(-((0.5 - gx) * S / zz * 0.07) ** 2) + np.exp(-((0.5 - gz) / 0.02) ** 2)) * below
-    img += hsv(0.85, 0.7, 1.0) * (grid * np.exp(-(y - hor) / S * 1.2))[..., None] * 0.7
-    # lissajous ring around the sun (3:4)
-    t = np.linspace(0, 2 * np.pi, 6000)
-    lx = cx + np.sin(3 * t + 0.6) * S * 0.40
-    ly = cy + np.sin(4 * t) * S * 0.40
-    line = np.zeros((S, S), np.float32)
-    np.add.at(line, (np.clip(ly.astype(int), 0, S - 1), np.clip(lx.astype(int), 0, S - 1)), 0.6)
-    line = gaussian_filter(line, 1.2) * 6
-    lcol = hsv(0.52, 0.75, 1.0)
-    img += lcol * line[..., None] * (1 - inside * 0.85)[..., None]
-    img = glow(img)
-    # monogram NT
-    tl = text_layer((S, S), [("NT", OSWALD, int(S * 0.24), (cx, cy + S * 0.31), "mm", (1, 1, 1))])
-    shadow = np.clip(gaussian_filter(tl[..., 0] if tl.ndim == 3 else tl, S * 0.018) * 2.2, 0, 1)
-    img = img * (1 - 0.85 * shadow)[..., None]                       # dark halo so the letters read on the sun
-    img = img + glow(tl * hsv(0.52, 0.8, 1.0)[None, None], (5, 18, 45), (1.2, 0.8, 0.5))   # cyan neon
-    img = img * (1 - tl) + tl * 2.2
-    # circular vignette (youtube crops a circle)
-    img *= np.clip(1.25 - r * 1.6, 0, 1)[..., None] ** 0.6
+    ang = np.arctan2(y - cy, x - cx)
+    img = np.zeros((S, S, 3), np.float32)
+    img += hsv(0.78, 0.85, 0.22) * np.exp(-r * 3.0)[..., None]
+    # sun-burst rays behind the head (rave lights)
+    rays = (0.5 + 0.5 * np.cos(ang * 12)) ** 6 * np.exp(-r * 2.2)
+    img += (hsv(0.88, 0.7, 1.0) * 0.30)[None, None] * rays[..., None]
+    # equaliser ring
+    ring = np.zeros((S, S), np.float32)
+    rng = np.random.default_rng(11)
+    nb = 48
+    lv = 0.5 + 0.5 * np.abs(np.sin(np.arange(nb) * 0.7)) * rng.uniform(0.6, 1.0, nb)
+    k = ((ang + np.pi) / (2 * np.pi) * nb).astype(int) % nb
+    frac = ((ang + np.pi) / (2 * np.pi) * nb) % 1
+    r0 = 0.37
+    ring = ((r > r0) & (r < r0 + 0.07 * lv[k]) & (frac > 0.18) & (frac < 0.82)).astype(np.float32)
+    rc = hsv(0.52, 0.8, 1.0)[None, None] * (1 - (r[..., None] - r0) * 6) + hsv(0.88, 0.8, 1.0)[None, None] * (r[..., None] - r0) * 6
+    img += glow(ring[..., None] * rc, (4, 16, 40), (1.0, 0.6, 0.4)) * 0.9
+    # the mascot
+    cell = int(S * 0.026)
+    cols = {"a": hsv(0.13, 0.8, 1.0) * 1.6, "b": hsv(0.40, 0.18, 1.0) * 1.15, "t": hsv(0.85, 0.8, 1.0) * 1.3,
+            "h": hsv(0.85, 0.75, 0.95) * 1.2, "d": hsv(0.75, 0.6, 0.06), "e": hsv(0.30, 0.85, 1.0) * 2.4,
+            "m": hsv(0.85, 0.8, 1.0) * 1.2, "c": hsv(0.40, 0.18, 0.75)}
+    w_ = len(BIT_HEAD[0]) * cell; h_ = len(BIT_HEAD) * cell
+    head = _pixels(BIT_HEAD, cols, cell, S, S, (S - w_) / 2, (S - h_) / 2 - S * 0.01)
+    m = (head.sum(2) > 0)[..., None]
+    halo = gaussian_filter(m[..., 0].astype(np.float32), S * 0.03)
+    img = img * (1 - 0.8 * np.clip(halo * 2, 0, 1))[..., None]
+    img = img * (1 - m) + head + glow(head * 0.25, (6, 24), (0.6, 0.4))
+    img *= np.clip(1.3 - r * 1.7, 0, 1)[..., None] ** 0.5
     Image.fromarray(tonemap(img)).resize((800, 800), Image.LANCZOS).save(path)
 
 
-# ---------------------------------------------------------------- banner
-def banner(path, frames):
+def _dancer_frame(t, hue, seed):
+    """One frame of the Dancer insert (same character as in the videos) as an RGB float array."""
+    from synthviz.visuals.inserts import Dancer, InsertCfg, CW, CH
+    from synthviz.visuals.pixelkit import Canvas
+
+    class _F:
+        pass
+    f = _F(); spb = 0.4
+    f.ev = dict(spb=spb, lead=[dict(t=i * 0.2, p=60 + (i * 5) % 12, dur=0.2) for i in range(200)])
+    f.kicks = [i * spb for i in range(100)]; f.snares = [i * spb * 2 + spb for i in range(50)]
+    f.hats = [i * spb + spb / 2 for i in range(100)]; f.fps = 30; f.energy = np.ones(3000, np.float32)
+
+    def pulse(kind, tt, tau=0.12):
+        d = [tt - x for x in {"kick": f.kicks, "snare": f.snares, "hat": f.hats}[kind] if x <= tt]
+        return float(np.exp(-min(d) / tau)) if d else 0.0
+    f.pulse = pulse
+    d = Dancer(f, 0, 20, InsertCfg(hue=hue, title=" "), seed=seed)
+    cv = Canvas(CW, CH); cv.clear(); d.draw(cv, t)
+    return np.clip(cv.a, 0, 1.5)
+
+
+def banner(path, frames=None):
+    """Stage with Bit dancing left and right of the name; text stays inside the 1546x423 safe area."""
     W, H = 2560, 1440
-    canvas = np.zeros((H, W, 3), np.float32)
-    n = len(frames)
-    pw = W // n
-    for k, fr in enumerate(frames):
-        # crop a central 1080 x (1080*H/pw) window of the scene area (top part, no HUD)
-        a = np.asarray(fr).astype(np.float32) / 255
-        ch = 1150
-        cw = int(ch * pw / H)
-        x0 = (1080 - cw) // 2
-        crop = Image.fromarray((a[0:ch, x0:x0 + cw] * 255).astype(np.uint8)).resize((pw, H), Image.LANCZOS)
-        canvas[:, k * pw:(k + 1) * pw] = np.asarray(crop).astype(np.float32) / 255
-    # tone down, unify colours
-    canvas = canvas ** 1.2 * 0.75
-    # dark centre band for the safe area (1546 x 423)
-    yy = np.linspace(-1, 1, H)[:, None]
-    xx = np.linspace(-1, 1, W)[None, :]
-    band = np.exp(-(yy / 0.32) ** 4) * np.exp(-(xx / 0.75) ** 6)
-    canvas *= (1 - 0.8 * band)[..., None]
-    # neon dividers
-    lin = canvas.copy() * 0
-    for k in range(1, n):
-        lin[:, k * pw - 2:k * pw + 2] += hsv(0.85 + k * 0.1, 0.6, 1.0) * 0.8
-    tl = text_layer((W, H), [
-        ("NEON THEORY", OSWALD, 210, (W / 2, H / 2 - 40), "mm", (1, 1, 1)),
-        ("SYNTH MUSIC YOU CAN SEE  •  NEW TRACK EVERY DAY", INTER, 44, (W / 2, H / 2 + 120), "mm", (1, 1, 1)),
-    ])
-    title_col = np.zeros_like(canvas)
+    yy0 = np.linspace(0, 1, H)[:, None, None]
+    canvas = (hsv(0.78, 0.8, 0.10) * (1 - yy0) + hsv(0.86, 0.8, 0.04) * yy0) * np.ones((1, W, 1), np.float32)
+    PW = 980                                   # each dancer panel; centred dancers sit outside the text area
+    ph = int(PW * 150 / 188)
+    for k, (t, hue, x0) in enumerate([(2.35, 0.80, -40), (3.15, 0.55, W - PW + 40)]):
+        fr = _dancer_frame(t, hue, 3 + k)
+        up = np.asarray(Image.fromarray((np.clip(fr / 1.5, 0, 1) * 255).astype(np.uint8)).resize((PW, ph), Image.NEAREST)).astype(np.float32) / 255 * 1.5
+        xs = np.linspace(-1, 1, PW)
+        fade = np.clip((1 - np.abs(xs)) * 3.0, 0, 1)[None, :, None] * np.clip(np.linspace(0, 1, ph) * 4, 0, 1)[:, None, None]
+        y0 = H - ph
+        xa, xb = max(0, x0), min(W, x0 + PW)
+        reg = canvas[y0:, xa:xb]
+        sub, fsub = up[:, xa - x0:xb - x0], fade[:, xa - x0:xb - x0]
+        canvas[y0:, xa:xb] = reg * (1 - fsub) + sub * fsub
+    yy = np.linspace(-1, 1, H)[:, None]; xx = np.linspace(-1, 1, W)[None, :]
+    band = np.exp(-(yy / 0.30) ** 4) * np.exp(-(xx / 0.48) ** 8)
+    canvas *= (1 - 0.6 * band)[..., None]
+    tl = text_layer((W, H), [(CHANNEL_NAME, OSWALD, 250, (W / 2, H / 2 - 40), "mm", (1, 1, 1))])
+    sl = text_layer((W, H), [(TAGLINE, INTER, 42, (W / 2, H / 2 + 125), "mm", (1, 1, 1))])
     xx01 = np.linspace(0, 1, W)[None, :, None]
-    title_col[:] = hsv(0.92, 0.75, 1.0) * (1 - xx01) + hsv(0.53, 0.75, 1.0) * xx01
-    canvas = canvas + glow(lin, (4, 18), (1, 0.5))
-    canvas = canvas * (1 - tl) + tl * (0.6 + 0.6 * title_col) + glow(tl * title_col, (5, 18, 50), (0.9, 0.6, 0.35))
-    Image.fromarray(tonemap(canvas * 1.1)).save(path, quality=93)
+    col = hsv(0.88, 0.8, 1.0) * (1 - xx01) + hsv(0.52, 0.8, 1.0) * xx01
+    canvas = canvas * (1 - tl) + tl * (0.7 + 0.6 * col) + glow(tl * col, (5, 20, 60), (1.0, 0.7, 0.45))
+    canvas = canvas * (1 - sl) + sl * 0.95
+    Image.fromarray(tonemap(canvas * 1.05)).save(path, quality=93)
 
 
 # ---------------------------------------------------------------- cover
@@ -221,7 +257,7 @@ def cover(path, frame, title, genre, hue):
     px = int(200 * min(1.0, 980 / max(tw, 1)))
     tl = text_layer((W, H), [(title, OSWALD, px, (W / 2, 1270), "mm", (1, 1, 1))])
     gl = text_layer((W, H), [(genre, OSWALD, 96, (W / 2, 1440), "mm", (1, 1, 1))])
-    sl = text_layer((W, H), [("NEON THEORY", INTER, 40, (W / 2, 1560), "mm", (1, 1, 1))])
+    sl = text_layer((W, H), [(CHANNEL_NAME, INTER, 40, (W / 2, 1560), "mm", (1, 1, 1))])
     lin = lin * (1 - tl) + tl * (0.8 + col) + glow(tl * col[None, None], (6, 22, 60), (1.0, 0.7, 0.4))
     lin = lin * (1 - gl) + gl * (0.5 + col2) + glow(gl * col2[None, None], (5, 18), (0.9, 0.5))
     lin = lin + sl * 0.9
@@ -273,7 +309,7 @@ def main():
                "Built entirely in code: synths, drums and harmony, no samples.",
                "The card at the bottom shows the live chord, the notes of the melody and bass, and the drum pattern.",
                "",
-               "Subscribe for a new track every day 💜",
+               "Subscribe for more drops 💜",
                "",
                f"{TAGS.get(style, '')} #electronicmusic #musicvisualizer #shorts", "```",
                "**Pinned comment:**", "```",
@@ -288,25 +324,27 @@ def main():
     tmp.rmdir()
 
 
-CHANNEL_TEXTS = """# NEON THEORY: channel kit (international)
+CHANNEL_TEXTS = """# RAVE.EXE: channel kit (international)
 
 ## Name and handles
-**NEON THEORY** · YouTube `@NeonTheory` (backups `@NeonTheoryMusic`, `@NeonTheoryFM`) · TikTok / Instagram `@neontheory`
+**RAVE.EXE** · YouTube `@RaveExe` (backups `@RaveExeMusic`, `@rave.exe.music`) · TikTok / Instagram `@rave.exe`
+
+Mascot: **Bit**, the little robot in headphones who runs, shoots and dances through every video.
 
 ## Channel description (YouTube → Customise channel → Basic info)
 ```
-Synth music you can see.
+Synth music you can see. Hosted by Bit, a tiny robot who can't stop dancing.
 
-Every track on this channel is generated in code: synths, 808s, hardstyle kicks, reese and growl basses, chords and melodies. The visuals are driven by the real notes. Kicks move the camera, the melody runs across the neon note lane, chords change the colours, and every drop throws you into a new world: a neon highway, deep space, an arcade game or a rave.
+Every track on this channel is generated in code: synths, 808s, hardstyle kicks, reese and growl basses, chords and melodies. The visuals are driven by the real notes. Kicks move the camera, the melody runs across the neon note lane, chords change the colours, and every drop throws you into a new world: a neon highway, deep space, an arcade game or a rave where Bit dances to the drop.
 
 Hardstyle · Rawstyle · Drum & Bass · Liquid DnB · Future Bass · Bass House · Synthwave · Trance · Acid · Chiptune
 
-New Shorts every day. Tell me in the comments which genre should drop next.
+Tell me in the comments which genre should drop next.
 ```
 
 ## Short bio (TikTok / Instagram, max 80 chars)
 ```
-Synth music you can see 🎹 hardstyle · dnb · synthwave · new drop daily
+Synth music you can see 🎹 hardstyle · dnb · synthwave · made in code
 ```
 
 ## Channel keywords (Settings → Channel → Keywords)

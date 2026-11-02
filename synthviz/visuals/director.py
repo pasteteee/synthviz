@@ -68,6 +68,7 @@ def pick_insert(F, s, pool, used, rng):
         "bounce": 1.0 + 3.0 * min(0.6, st["mdur"]) - 0.25 * st["dens"],
         "breakout": 1.0 + 2.0 * (st["four"] > 0.85) + 0.2 * st["dens"],
         "shooter": 1.0 + 0.4 * st["snare"] + 0.3 * st["dens"] - (1.0 if st["four"] > 0.85 else 0.0),
+        "dancer": 1.5 + 2.5 * (st["four"] > 0.85),          # Bit dances wherever there is a straight beat
     }
     cand = [g for g in pool if g not in used] or pool
     for g in cand:
@@ -136,7 +137,7 @@ class Plan:
                 g = pick_insert(F, s, pool, used, rng)
                 used.append(g)
                 n_level += 1
-                title = {"runner": "LEVEL", "breakout": "STAGE", "shooter": "WAVE", "bounce": ""}[g]
+                title = {"runner": "LEVEL", "breakout": "STAGE", "shooter": "WAVE", "bounce": "", "dancer": ""}.get(g, "")
                 cfg = InsertCfg(hue=self.hue, title=f"{title} {n_level}" if title else "",
                                 hero_hue=(self.hue + 0.5) % 1.0)
                 self.inserts.append((g, a, b, cfg))

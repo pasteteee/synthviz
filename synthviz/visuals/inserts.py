@@ -523,7 +523,153 @@ class Shooter(Insert):
         self.title_card(cv, t, self.cfg.title or "WAVE 1")
 
 
-INSERTS = {c.name: c for c in (Runner, Bounce, Breakout, Shooter)}
+# ---------------------------------------------------------------- 5. dancer
+# Poses: absolute limb angles in degrees (0 = hanging down, 90 = out to the side, 180 = straight up),
+# for upper arm / forearm / thigh / shin of each side, plus crouch (px), torso lean (px) and head tilt.
+_P = lambda ua, fa, ub, fb, ta=8, sa=0, tb=8, sb=0, cr=0.0, lean=0.0, tilt=0.0: dict(
+    uaL=ua, faL=fa, uaR=ub, faR=fb, thL=ta, shL=sa, thR=tb, shR=sb, cr=cr, lean=lean, tilt=tilt)
+DANCE_MOVES = {
+    # one key pose per half beat; the dancer snaps into each pose right on the hit
+    "pump": [_P(150, 175, 150, 175, cr=0), _P(60, 150, 60, 150, 14, -10, 14, -10, cr=5)],
+    "running_man": [_P(40, 110, -30, 60, 45, -20, -5, 0, cr=2), _P(-30, 60, 40, 110, -5, 0, 45, -20, cr=2),
+                    _P(40, 110, -30, 60, 10, 5, 10, 5, cr=4), _P(-30, 60, 40, 110, 10, 5, 10, 5, cr=4)],
+    "point": [_P(160, 165, 20, 40, 15, 0, 5, 0, lean=-3, tilt=-8), _P(20, 40, 20, 40, 10, 0, 10, 0, cr=3),
+              _P(20, 40, 160, 165, 5, 0, 15, 0, lean=3, tilt=8), _P(20, 40, 20, 40, 10, 0, 10, 0, cr=3)],
+    "wave": [_P(95, 140, 90, 50, cr=1, tilt=-5), _P(90, 50, 95, 140, cr=1, tilt=5)],
+    "jumping_jack": [_P(160, 170, 160, 170, 30, 30, 30, 30, cr=-6), _P(30, 20, 30, 20, 6, 0, 6, 0, cr=4)],
+    "shuffle": [_P(70, 120, 70, 120, 35, -30, 5, 0, cr=3, lean=-2), _P(70, 120, 70, 120, 5, 0, 35, -30, cr=3, lean=2)],
+    "hands_up": [_P(170, 178, 170, 178, 10, 0, 10, 0, cr=0, tilt=-4), _P(150, 185, 150, 185, 14, -8, 14, -8, cr=5, tilt=4)],
+}
+
+
+class Dancer(Insert):
+    """An original pixel robot ("Bit", the runner hero) dancing on a disco floor. Every half beat it snaps
+    into a new pose, it squashes on kicks, the move changes every bar (big moves in the drops), the floor
+    tiles light up with the melody notes and the crowd in front bounces on the kick."""
+    name = "dancer"
+    GROUND = 132
+
+    def __init__(self, *a, **k):
+        super().__init__(*a, **k)
+        rng = np.random.default_rng(self.seed + 5)
+        names = list(DANCE_MOVES)
+        bars = int((self.t1 - self.t0) / (4 * self.spb)) + 3
+        seq, prev = [], None
+        for _ in range(bars):
+            m = str(rng.choice([n for n in names if n != prev]))
+            seq.append(m); prev = m
+        self.seq = seq
+        self.crowd = rng.uniform(0, 1, (16, 3))
+        self.tiles = rng.integers(0, 1000, (6, 12))
+
+    # ---- skeleton
+    def pose(self, t):
+        hb = self.spb / 2
+        u = (t - self.t0) / hb
+        i = int(math.floor(u)); ph = u - i
+        bar = max(0, int((t - self.t0) / (4 * self.spb)))
+        keys = DANCE_MOVES[self.seq[bar % len(self.seq)]]
+        a, b = keys[(i - 1) % len(keys)], keys[i % len(keys)]
+        e = smoothstep(min(1.0, ph * 3.5))          # snap in the first ~30 % of the half beat, then hold
+        return {k_: a[k_] + (b[k_] - a[k_]) * e for k_ in a}
+
+    @staticmethod
+    def _limb(cv, x, y, ang, side, ln, w, col):
+        r = math.radians(ang)
+        dx, dy = math.sin(r) * side, math.cos(r)
+        steps = int(ln * 1.5) + 1
+        for j in range(steps + 1):
+            px, py = x + dx * ln * j / steps, y + dy * ln * j / steps
+            cv.rect(px - w / 2, py - w / 2, px + w / 2, py + w / 2, col)
+        return x + dx * ln, y + dy * ln
+
+    def draw_bit(self, cv, t, cx, P, S=1.45):
+        F = self.F
+        kick = F.pulse("kick", t, 0.10)
+        hat = F.pulse("hat", t, 0.06)
+        q = self.pose(t)
+        sq = 3.0 * kick
+        hip_y = self.GROUND - 27 * S + q["cr"] * S + sq
+        hx = cx + q["lean"] * S
+        body, dark, glow, trim = P["hero"], P["dark"], P["accent2"] * (1 + 0.7 * hat), P["hero2"]
+        legc = body * 0.75
+        R = lambda x0, y0, x1, y1, c, add=False: cv.rect(x0, y0, x1, y1, c, add)
+        for side, th, sh in ((-1, q["thL"], q["shL"]), (1, q["thR"], q["shR"])):
+            kx, ky = self._limb(cv, hx + 3 * S * side, hip_y, th, side, 13 * S, 4 * S, legc)
+            fx, fy = self._limb(cv, kx, ky, th + sh, side, 13 * S, 4 * S, legc)
+            R(fx - 3 * S + 2 * S * side, fy - S, fx + 3 * S + 2 * S * side, fy + 2 * S, trim)
+        top = hip_y - 21 * S
+        R(hx - 7 * S, top, hx + 7 * S, hip_y + S, body)
+        R(hx - 7 * S, top + 13 * S, hx + 7 * S, top + 15 * S, trim)
+        R(hx - 3 * S, top + 4 * S, hx + 3 * S, top + 10 * S, glow * (0.5 + 0.8 * kick))
+        for side, ua, fa in ((-1, q["uaL"], q["faL"]), (1, q["uaR"], q["faR"])):
+            ex, ey = self._limb(cv, hx + 7 * S * side, top + 2 * S, ua, side, 11 * S, 4 * S, body * 0.9)
+            wx, wy = self._limb(cv, ex, ey, fa, side, 10 * S, 3 * S, body * 0.9)
+            R(wx - 2 * S, wy - 2 * S, wx + 2 * S, wy + 2 * S, trim)
+        tl = q["tilt"] * 0.12 * S
+        hy = top - 2 * S
+        h = lambda x0, y0, x1, y1, c: R(hx + x0 * S + tl, hy + y0 * S, hx + x1 * S + tl, hy + y1 * S, c)
+        h(-8, -15, 8, 0, body)
+        h(-6, -11, 6, -5, dark)
+        h(-5, -9, -1, -7, glow)
+        h(1, -9, 5, -7, glow)
+        h(-10, -11, -7, -4, trim)
+        h(7, -11, 10, -4, trim)
+        h(-8, -18, 8, -15, trim)
+        h(-1, -22, 1, -18, P["accent"])
+        R(hx + tl - S, hy - 24 * S, hx + tl + S, hy - 22 * S, P["accent"] * (1 + 2 * kick), True)
+
+    def draw(self, cv, t):
+        P = self.pal
+        F = self.F
+        kick = F.pulse("kick", t, 0.12)
+        snare = F.pulse("snare", t, 0.10)
+        en = float(F.energy[min(len(F.energy) - 1, int(t * F.fps))])
+        cv.vgrad(P["dark"], P["sky0"] * 1.6, 0, 90)
+        # spotlights sweeping with the bar
+        for j in range(3):
+            ang = math.sin((t - self.t0) / (2 * self.spb) * math.pi + j * 2.1) * 0.5
+            col = hsv(self.cfg.hue + 0.15 * j, 0.6, 1.0) * (0.06 + 0.10 * en + 0.10 * snare)
+            x0 = 30 + 64 * j
+            for y in range(0, self.GROUND, 2):
+                w = 2 + y * 0.18
+                xc = x0 + ang * y
+                cv.rect(xc - w, y, xc + w, y + 2, col, add=True)
+        # disco floor in perspective: tiles flash with the melody notes
+        hor = 84
+        i_n = bisect.bisect_right(self.nt, t) - 1
+        last = self.notes[i_n] if i_n >= 0 else None
+        age = t - last["t"] if last else 9
+        for r in range(6):
+            y0 = hor + (r ** 1.6) * 4.2; y1 = hor + ((r + 1) ** 1.6) * 4.2
+            wrow = 40 + r * 26
+            for c in range(12):
+                xa = CW / 2 - wrow + c * 2 * wrow / 12
+                xb = xa + 2 * wrow / 12 - 1
+                lit = (self.tiles[r, c] + (i_n if i_n >= 0 else 0) * 7) % 5 == 0
+                col = pitch_color(last["p"] if last else 60, self.cfg.hue) if lit else P["ground"]
+                k_ = (0.25 + 1.2 * math.exp(-age / 0.25)) if lit else 0.45 + 0.3 * kick
+                cv.rect(xa, y0, xb, y1 - 1, col * k_)
+        # dancer + reflection-free shadow
+        cx = CW / 2
+        cv.rect(cx - 20, self.GROUND + 1, cx + 20, self.GROUND + 3, P["dark"])
+        self.draw_bit(cv, t, cx, P)
+        # crowd silhouettes in front, bouncing on the kick
+        for x, ph, s in self.crowd:
+            bx = x * CW
+            by = CH - 6 - 4 * kick * (0.5 + s) - 2 * math.sin(t * 6 + ph * 6)
+            cv.rect(bx - 6, by, bx + 6, CH, P["dark"])
+            cv.rect(bx - 4, by - 7, bx + 4, by, P["dark"])
+            if s > 0.7:     # some hands in the air
+                cv.rect(bx + 4, by - 16 - 3 * kick, bx + 6, by - 2, P["dark"])
+        # confetti on snares in the drops
+        if en > 0.6:
+            for j, sn in enumerate(F.snares[max(0, bisect.bisect_right(F.snares, t) - 2):bisect.bisect_right(F.snares, t)]):
+                cv.burst(CW / 2, 40, t - sn, int(sn * 1000) + j, P["accent"], n=18, speed=70, life=0.6, grav=50)
+        self.title_card(cv, t, self.cfg.title or "DANCE!")
+
+
+INSERTS = {c.name: c for c in (Runner, Bounce, Breakout, Shooter, Dancer)}
 
 
 # ---------------------------------------------------------------- compositing

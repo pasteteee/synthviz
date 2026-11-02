@@ -285,6 +285,8 @@ HOOK_RHYTHMS = {
     "dnb": [[0, 3, 6], [0, 2, 6, 8], [0, 3, 6, 8], [0, 2, 4, 10]],
     "bass": [[0, 3, 6, 10, 12], [2, 6, 10, 14], [0, 3, 6, 8, 11, 14], [0, 2, 3, 6, 10]],
     "sw": [[0, 4, 6, 10, 12], [0, 8, 10, 12], [0, 3, 6, 8, 12], [0, 6, 8, 12, 14]],
+    # slow flowing lead: long notes, legato glides between them
+    "flow": [[0, 8], [0, 12], [0, 6, 8], [0, 8, 12], [0], [0, 10]],
 }
 
 
@@ -379,9 +381,11 @@ def make_hook(key: Key, chords: list[ChordEvent], bars: int, family="sw", lo=70,
                 elif not last:
                     up = _notes_in(stable_pcs(ch), p + 1, min(hi, p + 7))
                     p = up[0] if up else p
-            dur = length * (0.85 if length < 1 else 0.95)
+            flow = family == "flow"
+            dur = length * (1.0 if flow else (0.85 if length < 1 else 0.95))
+            slide_p = 0.7 if flow else (0.25 if length < 0.5 else 0.12)
             n = Note(beat, max(0.12, dur), p, vel=0.8 + 0.12 * (st % 4 == 0) + rng.uniform(-0.04, 0.04),
-                     slide=bool(out) and length < 0.5 and rng.random() < 0.25 and abs(p - out[-1].pitch) <= 5,
+                     slide=bool(out) and rng.random() < slide_p and abs(p - out[-1].pitch) <= 7,
                      accent=st % 4 == 0)
             if length >= 1.0 and rng.random() < 0.3:
                 n.scoop = -1.0

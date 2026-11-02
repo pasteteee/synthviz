@@ -258,6 +258,22 @@ def clip_os(x, drive_db, kind="hard", asym=0.0):
     return resample_poly(u, 1, OS)[: len(x)]
 
 
+KICK_DENSITY_DB = 6.0   # final clip: real hardstyle kicks have the tail as loud as the attack (crest ~4 dB)
+
+
+def densify(k, ceil=0.95, drive_db=None):
+    """Normalise, then hard-clip the kick by `drive_db` (oversampled) so the tail carries the same level as the
+    transient. This is where the weight of a hardstyle kick comes from; a peaky kick loses 6+ dB in the limiter."""
+    drive_db = KICK_DENSITY_DB if drive_db is None else drive_db
+    k = k / (np.abs(k).max() + 1e-9)
+    if k.ndim == 2:
+        k = np.stack([clip_os(k[:, c], drive_db, "hard") for c in range(k.shape[1])], 1)
+    else:
+        k = clip_os(k, drive_db, "hard")
+    k = M.run(k, [P.LowpassFilter(12000)])
+    return k / (np.abs(k).max() + 1e-9) * ceil
+
+
 def hardstyle_kick(root_hz, length_s, ch: KickCharacter, seed=0):
     """Hardstyle kick v2: punch + EQ->hard clip->EQ->clip tail gliding 2-3x root -> root, zaag EQ, room, clean sub."""
     fl = ch.fl
@@ -285,7 +301,7 @@ def hardstyle_kick(root_hz, length_s, ch: KickCharacter, seed=0):
     x = M.run(x, [P.LowpassFilter(fl["lp"]), P.HighpassFilter(30)])
     rise = np.clip((t - 0.012) / 0.02, 0, 1)
     if fl["tail_env"] == "decay":
-        shape = 0.55 + 0.45 * np.exp(-t / (length_s * 0.6))
+        shape = 0.75 + 0.25 * np.exp(-t / (length_s * 0.6))
     elif fl["tail_env"] == "swell":
         shape = 0.8 + 0.2 * (t / length_s)
     else:
@@ -298,8 +314,8 @@ def hardstyle_kick(root_hz, length_s, ch: KickCharacter, seed=0):
         tail = tail + wet.mean(axis=1) * fl["rev"]
     tail = tail - M.lr4(tail, 90, "low")
     sub = M.lr4(np.tanh(1.3 * np.sin(ph)), 90, "low") * cut * np.clip(t / 0.005, 0, 1)
-    k = tail + punch * 0.45 * fl["punch"] + sub * 0.6
-    return k / (np.abs(k).max() + 1e-9) * 0.95
+    k = tail + punch * 0.45 * fl["punch"] + sub * 0.9
+    return densify(k, 0.95)
 
 
 def kick_pounder(root_hz=41.0, length_s=0.40, drive=3.5, crunch=1.0, width=1.0, seed=0, peaks=(1110, 1400, 2000, 2800)):
@@ -331,10 +347,16 @@ def kick_pounder(root_hz=41.0, length_s=0.40, drive=3.5, crunch=1.0, width=1.0, 
     st = mid + side * width
     st = np.tanh(st / (np.abs(st).max() + 1e-9) * 5.0) * 1.35 * crunch
     k = body[:, None] + st
-    return k / (np.abs(k).max() + 1e-9) * 0.97
+    return densify(k, 0.97)
 
 
 def kick_root_hz(root_pc):
-    """Chord root -> tail frequency in E1..D#2 (41-78 Hz)."""
-    m = 28 + (root_pc - 28) % 12
+    """Chord root -> kick body frequency. The root or its fifth (always consonant), whichever lands closest
+    to G1 (49 Hz), so the tail stays in the 40-60 Hz sweet spot where it is felt as weight, not as a note."""
+    cands = []
+    for pc in (root_pc % 12, (root_pc + 7) % 12):
+        for m in range(24, 41):
+            if m % 12 == pc:
+                cands.append(m)
+    m = min(cands, key=lambda m: (abs(m - 31), m))
     return m2f(m), m

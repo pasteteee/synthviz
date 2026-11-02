@@ -160,20 +160,25 @@ STYLES = {
 
 # stem levels in LUFS-S relative to the kick, by genre family (research 4.2)
 LEVELS = {
-    "hs":   {"kick": 0, "bass": -6, "snare": -7, "lead": -3, "chords": -9, "pad": -9, "hats": -15, "arp": -11, "counter": -8, "perc": -15},
-    "bass": {"kick": 0, "bass": 0.5, "snare": -3, "lead": -5, "chords": -11, "pad": -12, "hats": -11, "arp": -11, "counter": -8, "perc": -13},
-    "dnb":  {"kick": 0, "bass": -0.5, "snare": -4, "lead": -5, "chords": -10, "pad": -10, "hats": -13, "arp": -11, "counter": -8, "perc": -14},
-    "fb":   {"kick": 0, "bass": -2, "snare": -5, "lead": -4, "chords": -3, "pad": -8, "hats": -14, "arp": -9, "counter": -7, "perc": -14},
-    "sw":   {"kick": 0, "bass": -4, "snare": -4, "lead": -3, "chords": -8, "pad": -8, "hats": -15, "arp": -9, "counter": -8, "perc": -15},
+    # LUFS-S relative to the kick in the drop. K-weighting under-reads lows, so the music sits well below the kick
+    # (measured against reference hardstyle / bass music: 20-80 Hz must dominate the drop).
+    "hs":   {"kick": 0, "bass": -6, "snare": -15, "lead": -11, "chords": -16, "pad": -17, "hats": -19, "arp": -17, "counter": -15, "perc": -19},
+    "bass": {"kick": 0, "bass": 1.5, "snare": -3, "lead": -8, "chords": -14, "pad": -15, "hats": -12, "arp": -14, "counter": -11, "perc": -14},
+    "dnb":  {"kick": 0, "bass": 0.5, "snare": -3, "lead": -8, "chords": -13, "pad": -13, "hats": -13, "arp": -14, "counter": -11, "perc": -14},
+    "fb":   {"kick": 0, "bass": 0, "snare": -4, "lead": -7, "chords": -6, "pad": -11, "hats": -14, "arp": -12, "counter": -10, "perc": -15},
+    "sw":   {"kick": 0, "bass": -3, "snare": -4, "lead": -5, "chords": -10, "pad": -10, "hats": -15, "arp": -11, "counter": -10, "perc": -15},
 }
 FAMILY = {"hardstyle": "hs", "rawstyle": "hs", "heavy_bass": "bass", "dnb_energy": "dnb", "dnb_liquid": "dnb",
           "future_bass": "fb", "synthwave": "sw", "trance": "sw", "acid": "sw", "chiptune": "sw", "ambient_space": "sw"}
+# master high shelf (+2.5 dB x this at 6 kHz); hardstyle is kept darker so the kick carries the energy
+BRIGHT = {"hs": 0.0, "bass": 0.6, "dnb": 0.8, "fb": 1.0, "sw": 1.0}
+LEAD_ROLE = None   # force a Surge lead role, e.g. "brasslead" for calm melodic tracks
 LUFS_TARGET = {"hs": -6.5, "bass": -6.5, "dnb": -7.0, "fb": -7.5, "sw": -9.0}
 
 _TEMPLATE = [("intro", 2), ("build", 2), ("drop", 4), ("break", 2), ("drop2", 4), ("outro", 1)]
 _SECTION_ROLES = {
     "intro": {"pad", "arp_f", "fx", "counter"},
-    "build": {"pad", "arp", "bass", "hats", "kick_light", "roll", "fx", "lead_f"},
+    "build": {"pad", "arp", "hats", "kick_light", "roll", "fx", "lead_f"},   # no bass: the drop must feel bigger
     "drop": {"pad", "arp", "bass", "lead", "chords", "kick", "snare", "hats", "perc", "fx", "counter"},
     "break": {"pad", "lead_soft", "arp_f", "hats_soft", "counter"},
     "drop2": {"pad", "arp", "bass", "lead", "chords", "kick", "snare", "hats", "perc", "fx", "counter", "harm"},
@@ -181,6 +186,7 @@ _SECTION_ROLES = {
 }
 _ENERGY = {"intro": 0.25, "build": 0.55, "drop": 1.0, "break": 0.35, "drop2": 1.0, "outro": 0.2}
 OUTRO_SECONDS = 5.5  # room for the subscribe animation
+MELODY_MODE = None   # force "flow" or a family name for auditions
 LOOP_S = 0.5         # tail crossfaded into the start for a seamless loop
 
 
@@ -533,7 +539,11 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     mel_seed = rng.randrange(10 ** 9)
     phrase_form = rng.choice(["AABA", "ABAC", "AAAB", "ABAB"])
     mel_cache = {}
-    use_hook = random.Random(mel_seed).random() < 0.85
+    mrng = random.Random(mel_seed)
+    use_hook = mrng.random() < 0.9
+    # melody mode: genre hook or a slow flowing lead (long gliding notes)
+    p_flow = {"dnb_liquid": 0.6, "synthwave": 0.45, "trance": 0.4, "future_bass": 0.35, "ambient_space": 0.8}.get(style_name, 0.2)
+    mel_family = MELODY_MODE or ("flow" if mrng.random() < p_flow else style["family"])
     hook_lo = 62 if lead_lo == 62 else 69   # drop lead around C5-C6
 
     def melody_for(start_bar, variant):
@@ -545,7 +555,7 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
             if variant in (0, 1) and use_hook:
                 # the hook: same motif in break and drops so the ear learns it
                 r = random.Random(mel_seed + key_[0] * 101)
-                mel_cache[key_] = harmony.make_hook(k, sub, mel_bars, style["family"], lo=hook_lo, hi=hook_lo + 18, rng=r)
+                mel_cache[key_] = harmony.make_hook(k, sub, mel_bars, mel_family, lo=hook_lo, hi=hook_lo + 18, rng=r)
             else:
                 mel_cache[key_] = harmony.make_melody(k, sub, mel_bars, char, lo=lead_lo, hi=lead_lo + 19, rng=r,
                                                       phrase_form=phrase_form)
@@ -669,11 +679,17 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     sx = {}
     if surge.available() and style.get("drums") != "chip":
         reg = hook_lo + 7
-        for role, prob, kw in (("lead", 0.8, dict(register=reg)), ("alt", 0.8, dict(register=reg)),
+        for role, prob, kw in (("lead", 0.85, dict(register=reg)), ("alt", 0.8, dict(register=reg)),
+                               ("big", 0.0 if style_name in ("dnb_liquid", "synthwave", "chiptune") else 0.85, dict(register=reg)),
                                ("chords", 0.7, dict(register=64)), ("pad", 0.6, dict(register=60, sustain_min=0.6)),
                                ("arp", 0.6, dict(register=72)), ("counter", 0.5, dict(register=lead_lo))):
             if srng.random() < prob:
-                pr = surge.pick(style_name, "lead" if role == "alt" else role, srng, **kw)
+                srole = "lead" if role == "alt" else role
+                if srole == "lead" and mel_family == "flow":
+                    srole = "flowlead"
+                if srole in ("lead", "flowlead") and LEAD_ROLE:
+                    srole = LEAD_ROLE
+                pr = surge.pick(style_name, srole, srng, **kw)
                 if pr:
                     sx[role] = pr
 
@@ -695,6 +711,15 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
     if harm_notes:
         stems["lead"] += LR(harm_notes, "lead", 11, 0.55)
     throw_buf = LR(throw_notes, "lead", 12) if throw_notes else Z()
+    # drops: the hook doubled by a big supersaw preset (same octave), lead pushed up vs build/break
+    drop_lead = [x for x in lead_notes if _sec_at(sections, int(x.start // 4)).name in ("drop", "drop2")]
+    if "big" in sx and drop_lead:
+        stems["lead"] += surge.render(sx["big"], drop_lead, spb, T) * 0.75
+    lenv = np.full(n, 0.8)
+    for s_ in sections:
+        if s_.name in ("drop", "drop2"):
+            lenv[int(s_.start_bar * 4 * spb * SR):int((s_.start_bar + s_.bars) * 4 * spb * SR)] = 1.25
+    stems["lead"] *= dsp.onepole_lp(lenv, 30.0)[:, None]
     # drops: fat octave-down layer under the lead
     dl = style.get("drop_layer", "supersaw_lead")
     if dl:
@@ -1076,14 +1101,14 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
         a_, b_ = int(s_.start_bar * 4 * spb * SR), min(n, int((s_.start_bar + s_.bars) * 4 * spb * SR))
         if b_ <= a_:
             continue
-        db_ = {"intro": -4.0, "break": -4.5, "outro": -3.0}.get(s_.name, 0.0)
+        db_ = {"intro": -6.0, "break": -6.5, "outro": -4.0}.get(s_.name, 0.0)
         if s_.name == "build":
-            sg[a_:b_] = 10 ** (np.linspace(-7.0, -2.5, b_ - a_) / 20)
+            sg[a_:b_] = 10 ** (np.linspace(-10.0, -4.0, b_ - a_) / 20)
         else:
             sg[a_:b_] = 10 ** (db_ / 20)
     sg = dsp.onepole_lp(sg, 20.0)
     mix = mix * sg[:, None]
-    mix = mixing.master(mix, target_lufs=style.get("lufs", -8.0))
+    mix = mixing.master(mix, target_lufs=style.get("lufs", -8.0), brightness=BRIGHT.get(fam, 1.0))
     # seamless Shorts loop: the outro sinks to ~25% and its last LOOP_S crossfade into the first beat,
     # so when the player jumps back to 0 the sound continues without a gap
     fo = int(1.8 * SR); mix[-fo:] *= (0.25 + 0.75 * np.linspace(1, 0, fo) ** 1.5)[:, None]
@@ -1131,7 +1156,7 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
         lead=nd(lead_notes), harm=nd(harm_notes), counter=nd(counter_notes), bass=nd(bass_notes + kick_disp), arp=nd(arp_notes),
         pad_lines=[nd(l) for l in pad_lines] if pad_lines else [nd([x for x in pad_notes if x.pitch == x.pitch])],
         glide_s=max(0.12, min(0.4, spb * 0.45)), lead_glide=PATCHES[lead_patch]["glide"],
-        duration=dur, loop_s=LOOP_S, surge={k_: v["path"] for k_, v in sx.items()},
+        duration=dur, loop_s=LOOP_S, kick_flavour=hs_char.name if hs_char is not None else None, melody_mode=mel_family if use_hook else "classic", surge={k_: v["path"] for k_, v in sx.items()},
         fills=fills_ev, bass_drops=bass_drops,
     )
     return song

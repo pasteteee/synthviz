@@ -42,7 +42,7 @@ def main(argv=None):
     ap.add_argument("--world", help="neon_drive | deep_space | arcade | liquid | rave | canyon")
     ap.add_argument("--inserts", help="comma list: runner,bounce,breakout,shooter")
     ap.add_argument("--insert-mode", default="drops", help="drops | all | none")
-    ap.add_argument("--outro", help="question | rate | tomorrow | replay | loop")
+    ap.add_argument("--outro", help="question | rate | replay | loop")
     ap.add_argument("--segments", help="preview ranges, e.g. 8.5-18.5,31-41")
     a = ap.parse_args(argv)
 

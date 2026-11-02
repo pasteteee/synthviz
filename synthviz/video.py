@@ -77,7 +77,7 @@ def render_video(style="synthwave", seed=None, out="out.mp4", scene=None, alt_sc
     rng = random.Random(seed)
     plan = Plan(F, style, rng, world=world, inserts=inserts, insert_mode=insert_mode,
                 force_scene=scene)
-    outro = outro or cta_effect or rng.choice(["question", "rate", "tomorrow", "question"])
+    outro = outro or cta_effect or rng.choice(["question", "rate", "replay", "question"])
     if outro not in OUTRO_LINES:
         outro = "question"
     log(f"[plan] world={plan.world} hue={plan.hue:.2f} shots={[(round(a, 1), s, tr) for a, s, tr in plan.shots]}")

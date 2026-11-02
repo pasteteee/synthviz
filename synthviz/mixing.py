@@ -248,7 +248,7 @@ def music_bus(x, ott_depth=0.25, sat=1.6):
     y = ott(x, ott_depth)
     pk = np.max(np.abs(y)) + 1e-9
     y = tape(y / pk, sat) * pk
-    return run(y, [P.PeakFilter(3000, 2.0, 0.7), P.HighShelfFilter(9000, 2.0, 0.7)])
+    return run(y, [P.PeakFilter(3000, 1.0, 0.7), P.HighShelfFilter(9000, 2.0, 0.7)])
 
 
 def returns_eq(x):

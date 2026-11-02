@@ -88,7 +88,7 @@ def texts(meta, rng):
         "Every sound, chord and melody here is generated in code, and the visuals react to the real notes, drums and bass.",
         NOTE_TEXT.get(style, "Watch the note lane: every light is a real note of the track."),
         "",
-        "New track every day. Subscribe so you don't miss the next drop 💜",
+        "Subscribe for more drops 💜",
         "",
         " ".join("#" + t for t in tags[:8]),
     ])

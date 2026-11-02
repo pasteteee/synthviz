@@ -4,7 +4,7 @@ plan_batch(styles, seed) -> list of kwargs for render_video (world, inserts,
 outro), so that inside a batch:
   * no two neighbouring videos share a world, and worlds rotate before repeating;
   * the pair of arcade games changes every video (each game appears evenly);
-  * the outro line rotates (question / rate / tomorrow / replay).
+  * the outro line rotates (question / rate / replay).
 The style still limits which worlds fit (director.STYLE_WORLDS), but if a style's
 own worlds are used up, any unused world is taken instead of repeating."""
 from __future__ import annotations
@@ -15,7 +15,7 @@ import random
 from .director import WORLDS, STYLE_WORLDS
 from .inserts import INSERTS
 
-OUTROS = ["question", "rate", "tomorrow", "replay"]
+OUTROS = ["question", "rate", "replay"]   # no "tomorrow": the channel does not promise a schedule
 
 
 def plan_batch(styles, seed=0, history=None):
