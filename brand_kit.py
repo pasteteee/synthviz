@@ -494,7 +494,7 @@ def cover(video, t, title, genre_line, out, crop_top=0.0, crop_h=1.0):
     yy = np.linspace(0, 1, H, dtype=np.float32)[:, None, None]
     # darken top band (header) and lower part (title area) for legibility
     lin *= 1 - 0.80 * np.clip((0.15 - yy) / 0.09, 0, 1)
-    lin *= 1 - 0.97 * np.clip((yy - 0.575) / 0.035, 0, 1)
+    lin *= 1 - 0.985 * np.clip((yy - 0.565) / 0.025, 0, 1)
     lin += floor_grid(W, H, int(H * 0.80), MAG, density=0.9, power=0.45)
     lin += lasers(W, H, [((W * 0.5, H * 0.80), 0.0)], n=7, spread=2.6, width=0.006, seed=9, power=0.25) * (yy > 0.60)
     # header: RAVE.EXE logo, small
@@ -515,7 +515,7 @@ def cover(video, t, title, genre_line, out, crop_top=0.0, crop_h=1.0):
             if best is None or m < best[0]:
                 best = (m, [l1, l2])
         lines = best[1]
-    cell = min(fit_word(l, W - 110, 34) for l in lines)
+    cell = min(fit_word(l, W - 110, 24) for l in lines)
     ty = int(H * 0.625)
     fill = lambda u, v: (YEL * (1 - v) + MAG * v) * 1.3
     for j, l in enumerate(lines):
@@ -527,7 +527,7 @@ def cover(video, t, title, genre_line, out, crop_top=0.0, crop_h=1.0):
         lin = over(lin, lay, al)
         ty += h_ + int(cell * 1.4)
     # genre chip (window-styled)
-    gy = ty + 40
+    gy = min(ty + 40, H - 170)
     gm = text_mask(W, H, [(genre_line, 46, (W // 2, gy + 44), "mm", 5)])
     cols = np.nonzero(gm.max(0) > 0.3)[0]
     gx0, gx1 = cols.min() - 40, cols.max() + 40
