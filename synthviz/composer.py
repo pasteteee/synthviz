@@ -913,7 +913,7 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
             if i and len(roll_t):
                 # reverse snare swell into the drop
                 sn_ = SMP.load(sm_snare)
-                pad_ = np.zeros(int(2.0 * SR)); pad_[: len(sn_)] = sn_
+                pad_ = np.zeros(int(2.0 * SR)); sn_ = sn_[: len(pad_)]; pad_[: len(sn_)] = sn_
                 wet_ = dsp.wet_reverb(np.stack([pad_, pad_], 1), seconds=1.6, mix=1.0)[::-1]
                 wet_ = wet_[-int(min(1.5, 2 * spb) * SR):]
                 dsp.place(fx_buf, wet_ / (np.max(np.abs(wet_)) + 1e-9), t0 - len(wet_) / SR, 0.3)

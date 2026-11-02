@@ -224,6 +224,7 @@ FLAVOURS = {
     "modern_punchy": dict(p_start=2.0, p_tau=0.07, p_end=1.0, drive=(22, 12), pre=(200, 7, 0.7), mid=(900, 4, 0.9),
                           zaag=(2600, 6, 1.2), lp=13000, rev=0.15, tail_env="decay", punch=1.4, raw_dip=0.0),
 }
+FLAVOURS["pounder"] = dict(FLAVOURS["euphoric"], pounder=True)   # rave pounder (user reference)
 KICK_FLAVOUR = None   # force one flavour for every track (set when the user picks one)
 
 
@@ -232,7 +233,7 @@ class KickCharacter:
 
     def __init__(self, rng, raw=False, flavour=None):
         self.raw = raw
-        name = flavour or KICK_FLAVOUR or ("raw" if raw else str(rng.choice(["euphoric", "euphoric", "classic", "modern_punchy"])))
+        name = flavour or KICK_FLAVOUR or ("raw" if raw else str(rng.choice(["pounder", "pounder", "pounder", "euphoric", "classic", "modern_punchy"])))
         fl = dict(FLAVOURS[name])
         j = lambda v, r: v * rng.uniform(1 - r, 1 + r)
         fl["p_tau"] = j(fl["p_tau"], 0.15)
@@ -240,6 +241,9 @@ class KickCharacter:
         fl["mid"] = (j(fl["mid"][0], 0.15),) + fl["mid"][1:]
         fl["zaag"] = (j(fl["zaag"][0], 0.12),) + fl["zaag"][1:]
         self.name, self.fl = name, fl
+        self.drive = rng.uniform(3.0, 4.2)
+        self.crunch = rng.uniform(0.85, 1.15)
+        self.peaks = tuple(f * rng.uniform(0.9, 1.1) for f in (1110, 1400, 2000, 2800))
 
 
 OS = 4
@@ -257,6 +261,8 @@ def clip_os(x, drive_db, kind="hard", asym=0.0):
 def hardstyle_kick(root_hz, length_s, ch: KickCharacter, seed=0):
     """Hardstyle kick v2: punch + EQ->hard clip->EQ->clip tail gliding 2-3x root -> root, zaag EQ, room, clean sub."""
     fl = ch.fl
+    if fl.get("pounder"):
+        return kick_pounder(root_hz, length_s, ch.drive, ch.crunch, 1.0, seed, ch.peaks)
     rng = np.random.default_rng(seed)
     n = max(64, int(length_s * SR)); t = np.arange(n) / SR
     fp = 60 + 240 * np.exp(-t / 0.012) + 2500 * np.exp(-t / 0.0015)
@@ -294,6 +300,38 @@ def hardstyle_kick(root_hz, length_s, ch: KickCharacter, seed=0):
     sub = M.lr4(np.tanh(1.3 * np.sin(ph)), 90, "low") * cut * np.clip(t / 0.005, 0, 1)
     k = tail + punch * 0.45 * fl["punch"] + sub * 0.6
     return k / (np.abs(k).max() + 1e-9) * 0.95
+
+
+def kick_pounder(root_hz=41.0, length_s=0.40, drive=3.5, crunch=1.0, width=1.0, seed=0, peaks=(1110, 1400, 2000, 2800)):
+    """Rave 'pounder' hardstyle kick (research/hardstyle_kicks.py): flat hard-clipped sine body on the root
+    plus a wide resonant 'tok' attack (0-140 ms). Stereo (n, 2)."""
+    rng = np.random.default_rng(seed)
+    length_s = max(0.08, length_s - 0.006)
+    n = int(length_s * SR); t = np.arange(n) / SR
+    fb = root_hz * (1 + 0.25 * np.exp(-t / 0.03))
+    body = clip_os(np.sin(2 * np.pi * np.cumsum(fb) / SR), 20 * np.log10(drive), "hard")
+    grit = clip_os(body * 0.9 + 0.02 * rng.standard_normal(n), 6, "hard")
+    body = body + 0.16 * M.run(grit, [P.HighpassFilter(600)])
+    body = M.run(body, [P.LowpassFilter(7000)])
+    body = body * np.clip((t - 0.06) / 0.035, 0, 1) ** 1.5 * np.clip((length_s - t) / 0.006, 0, 1)
+    fa = 100 + 220 * np.exp(-t / 0.012)
+    tok = np.sin(2 * np.pi * np.cumsum(fa) / SR) + 0.25 * M.lr4(rng.standard_normal(n), 1500, "high") * np.exp(-t / 0.01)
+    tok = clip_os(tok, 18, "hard")
+    tok = M.run(tok, [P.HighpassFilter(350), P.HighpassFilter(350)] + [P.PeakFilter(f, 9 * crunch, 3.0) for f in peaks]
+                + [P.HighShelfFilter(3000, 10, 0.7), P.LowpassFilter(13000)])
+    tok = clip_os(tok * 0.6, 8, "soft")
+    aenv = np.exp(-t / 0.06) * (1 - 0.35 * np.exp(-((t - 0.022) / 0.008) ** 2))
+    aenv *= np.clip((0.14 - t) / 0.04, 0, 1)
+    tok = tok * aenv
+    dl, dr_ = int(0.0007 * SR), int(0.0023 * SR)
+    L = tok.copy(); R = np.zeros(n); R[dr_:] = tok[:-dr_]; L[dl:] = 0.7 * L[dl:] + 0.5 * tok[:-dl]
+    st = np.stack([L, R], 1)
+    st = st + M.run(st, [P.Reverb(0.2, 0.4, 1.0, 0.0, 1.0), P.HighpassFilter(400)]) * 0.25 * width
+    mid = st.mean(1, keepdims=True); side = st - mid
+    st = mid + side * width
+    st = np.tanh(st / (np.abs(st).max() + 1e-9) * 5.0) * 1.35 * crunch
+    k = body[:, None] + st
+    return k / (np.abs(k).max() + 1e-9) * 0.97
 
 
 def kick_root_hz(root_pc):

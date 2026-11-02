@@ -43,12 +43,15 @@ _SURGE_SR = 48000
 def _mod():
     for c in _CANDIDATES:
         if c and (Path(c) / "surge_render.py").exists() and (Path(c) / "curated_presets.json").exists():
+            if not list((Path(c) / "lib").glob("surgepy*.so")):
+                continue                     # not installed here (no binary) -> try the next location
             sys.path.insert(0, c)
             try:
                 import surge_render  # noqa: F401
                 return surge_render, json.loads((Path(c) / "curated_presets.json").read_text())
             except Exception:  # missing libpython / binary mismatch -> fall back to built-in synths
-                return None
+                sys.path.remove(c)
+                continue
     return None
 
 
