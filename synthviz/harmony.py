@@ -345,6 +345,8 @@ def make_hook(key: Key, chords: list[ChordEvent], bars: int, family="sw", lo=70,
     cells = HOOK_RHYTHMS.get(family, HOOK_RHYTHMS["sw"])
     motif_bars = 2 if bars >= 8 else 1
     n_motifs = max(1, bars // motif_bars)
+    if family == "jerk":      # jerk melodies wander more: fewer literal repeats
+        form = form or rng.choice(["ABCB", "ABAC", "ABCD", "ABCA"])
     form = form or rng.choice(["ABAB'", "AAAB", "AA'AB", "ABAC"])
     letters = [form.replace("'", "")[i % len(form.replace("'", ""))] for i in range(n_motifs)]
     # a 2-bar motif = cell + answering cell (often the same one shortened -> call/response)
@@ -364,7 +366,7 @@ def make_hook(key: Key, chords: list[ChordEvent], bars: int, family="sw", lo=70,
         last = mi == n_motifs - 1
         if L not in motifs:
             r = rhythm() if L == "A" or "A" not in motifs else (
-                motifs["A"][0] if rng.random() < 0.5 else rhythm())
+                motifs["A"][0] if (rng.random() < 0.5 and family != "jerk") else rhythm())
             sp = start if L == "A" else start + rng.choice([-3, 2, 4, 5])
             motifs[L] = (r, _motif(key, chords, base, r, lo, hi, rng, sp))
         r, m = motifs[L]

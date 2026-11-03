@@ -161,7 +161,7 @@ STYLES = {
         progs=["royal_road", "sad_axis", "dreamy_maj7", "axis_major"], bars_per_chord=1,
         lead=["bell_fm", "kalimba", "music_box", "future_pluck", "chip_pulse12"], lead_char=["playful", "wild"],
         counter=["kalimba", "bell_fm", "music_box"],
-        bass=[("@808", "trap808")], sub=False, bass_drive=0.9,
+        bass=[("@808", "jerk808")], sub=False, bass_drive=0.9,
         pad=["shimmer_pad", "glass_pad", None], glide_chords=0.6, chords_inst=["future_pluck", None],
         arp=(["music_box", "kalimba", "bell_fm"], ["up", "updown", "converge"], 0.25),
         drums="jerk", kick="trap", snare="trap", perc=["snap"], reverb=(2.4, 0.3), sidechain=0.6,
@@ -263,6 +263,10 @@ def _filter_notes(notes, sections, roles):
 
 
 # ---------------------------------------------------------------- drums
+# jerk kick rhythms by absolute bar (theory.make_bass 'jerk808' plays the 808 on exactly these steps)
+JERK_KICKS = [[0, 3, 6, 10], [0, 3, 8, 11, 14], [0, 6, 7, 10], [0, 3, 10, 13]]
+
+
 def _drum_bar(kind, bis, sec, rng):
     """(instrument, step16, vel) list for one bar, with fills every 4 bars."""
     hits = []
@@ -327,12 +331,13 @@ def _drum_bar(kind, bis, sec, rng):
             add("perc", [3, 11], 0.4)
         elif light or "hats" in roles:
             add("hat", list(range(0, 16, 4)), 0.35)
-    elif kind == "jerk":     # jerk: bouncy syncopated 808 kicks, claps on 2 and 4, skittering 16th hats + rolls
-        if full or light:
-            pats = [[0, 3, 6, 10], [0, 3, 8, 11, 14], [0, 6, 7, 10], [0, 3, 10, 13]]
-            add("kick", pats[bis % len(pats)] if full else [0], 0.95, 0.0)
+    elif kind == "jerk":     # jerk: bouncy syncopated kicks (the 808 plays the same rhythm), light snare on 2 and 4
+        if full or light:    # with a soft 1/16 repeat after the backbeat, skittering 16th hats + rolls
+            ab = getattr(_drum_bar, "abs_bar", bis)
+            add("kick", JERK_KICKS[ab % len(JERK_KICKS)] if full else [0], 0.95, 0.0)
         if full:
-            add("clap", [4, 12], 1.0, 0.0)
+            add("lsnare", [4, 12], 0.62, 0.04)
+            add("ghost", [13] + ([5] if bis % 2 else []), 0.3, 0.05)
             add("hat", [s_ for s_ in range(16) if s_ % 2 == 0 or rng.random() < 0.55], 0.38, 0.15)
             add("hat_roll", [6, 14] if bis % 2 else [14], 0.5)
             add("hat_o", [10] if bis % 2 == 0 else [2], 0.35)
@@ -361,7 +366,7 @@ def _drum_bar(kind, bis, sec, rng):
             add("noise_hat", list(range(0, 16, 4)), 0.35)
     # fills: replace the last beat with a roll / toms (big fill every 8 bars)
     if fill and kind not in ("halftime",):
-        hits = [h for h in hits if h[1] < (8 if big_fill else 12) or h[0] in ("hat", "kick" if kind in ("four", "hardstyle") else "_")]
+        hits = [h for h in hits if h[1] < (8 if big_fill else 12) or h[0] in ("hat", "kick" if kind in ("four", "hardstyle", "jerk") else "_")]
         four = kind in ("four", "hardstyle", "synthwave", "chip")
         if big_fill:
             v = rng.choice(["toms", "accel", "kickroll" if four else "toms", "flams"])
@@ -848,6 +853,7 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
         dk = style["drums"]
         if switch_b is not None and dk in ("dnb",) and switch_b <= bar * 4 < switch_b + 8:
             dk = "halftime_hard"
+        _drum_bar.abs_bar = bar
         hits_ = _drum_bar(dk, bis, sec, rng)
         if _drum_bar.last_fill:
             fv, fbig = _drum_bar.last_fill
@@ -883,6 +889,11 @@ def compose(style_name="synthwave", seed=None, bpm=None, key=None, scale=None, p
                 dsp.place(kick_buf, d.kick(kick_kind, vel), t, 0.9); lanes["kick"].append((t, vel))
                 if kick_layer is not None and kick_kind not in ("thunder", "classic", "euphoric", "raw_classic"):
                     dsp.place(kick_buf, SMP.trimmed(kick_layer, min(0.45, spb * 0.9), 0.05) * vel, t, 0.3)
+            elif inst == "lsnare":     # light snare: snappy sample only, no clap layer
+                if use_samples:
+                    dsp.place(sn_buf, SMP.pitched(sm_snare, 1.08 + rng.uniform(-0.02, 0.02)), t, 0.6 * vel)
+                dsp.place(sn_buf, d.snare(style["snare"], vel), t, 0.3)
+                lanes["snare"].append((t, vel))
             elif inst in ("snare", "snare_roll", "ghost"):
                 g = {"snare": 0.75, "snare_roll": 0.55, "ghost": 0.25}[inst]
                 if inst == "snare_roll" and "roll" in sec.roles:

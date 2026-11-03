@@ -610,6 +610,24 @@ def make_bass(chords: list[ChordEvent], pattern: str, octave_root=33, rng=None, 
                     seq = [(0, 2.5, r, False), (2.5, 0.5, r + 3 if key and (r + 3) % 12 in key.pcs else r + 4, True), (3.0, 1.0, r + 12, True)]
                 for st, d, p, sl in seq:
                     out.append(Note(o + st, d, p, 0.9, slide=sl))
+        elif pattern == "jerk808":
+            # jerk: the 808 plays the kick rhythm (composer.JERK_KICKS by absolute bar), root-locked;
+            # the last hit of a bar sometimes jumps an octave up and slides back down into the next downbeat
+            pats = [[0, 3, 6, 10], [0, 3, 8, 11, 14], [0, 6, 7, 10], [0, 3, 10, 13]]
+            beat = b0
+            while beat < b0 + L - 1e-6:
+                bar_i = int(beat // 4)
+                steps = pats[bar_i % len(pats)]
+                for k_, st in enumerate(steps):
+                    tb = bar_i * 4 + st / 4
+                    if not (b0 - 1e-6 <= tb < b0 + L - 1e-6):
+                        continue
+                    nxt = (steps[k_ + 1] / 4 + bar_i * 4) if k_ + 1 < len(steps) else (bar_i + 1) * 4
+                    d = max(0.2, (min(nxt, b0 + L) - tb) * 0.92)
+                    last = k_ == len(steps) - 1
+                    p = r + 12 if (last and rng.random() < 0.35) else r
+                    out.append(Note(tb, d, p, 0.95 if st == 0 else 0.85, slide=(p == r and k_ > 0 and rng.random() < 0.15)))
+                beat = (bar_i + 1) * 4
         elif pattern == "house":
             # bass house: offbeat stabs + 16th pickups, octave jumps
             for i in range(int(L)):
