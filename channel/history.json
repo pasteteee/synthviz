@@ -1,123 +1,294 @@
 [
  {
-  "file": "001_hardstyle_577249.mp4",
+  "file": "001_hardstyle_1102.mp4",
   "style_id": "hardstyle",
-  "seed": 577249,
-  "title": "INFERNO RUNNER",
-  "key": "F# minor",
-  "lead_patch": "surge:Pet",
+  "seed": 1102,
+  "title": "THUNDER ECHO",
+  "key": "C# minor",
+  "lead_patch": "surge:Saw Lead 1",
+  "bass_patch": "kick tail (hs_euphoric)",
+  "kick": "hs_euphoric",
+  "world": "rave",
+  "inserts": [
+   "dancer",
+   "shooter"
+  ],
+  "outro": "question",
+  "fingerprint": "hardstyle|surge:Saw Lead 1|kick tail (hs_euphoric)|hs_euphoric|C# minor|euphoric",
+  "hook": "bbfb5287f24f",
+  "surge": {
+   "lead": "patches_3rdparty/Lopyt/Leads/Saw Lead 1",
+   "big": "patches_3rdparty/Luna/Leads/96 Osc Supersaw",
+   "chords": "patches_3rdparty/Damon Armani/Plucks/Trance Pluck",
+   "pad": "patches_factory/Pads/Death To Gator",
+   "arp": "patches_factory/Plucks/Saw Pluck",
+   "counter": "patches_3rdparty/Giana Brotherz/Keys/Glassy E-Piano"
+  }
+ },
+ {
+  "file": "002_hardstyle_3307.mp4",
+  "style_id": "hardstyle",
+  "seed": 3307,
+  "title": "LEGION GLOW",
+  "key": "F# harmonic minor",
+  "lead_patch": "surge:Alias Supersaw",
   "bass_patch": "kick tail (hs_euphoric)",
   "kick": "hs_euphoric",
   "world": "canyon",
   "inserts": [
-   "shooter",
-   "runner"
-  ],
-  "outro": "question",
-  "fingerprint": "hardstyle|surge:Pet|kick tail (hs_euphoric)|hs_euphoric|F# minor|axis_minor",
-  "hook": "e44bcf3abb5f",
-  "surge": {
-   "lead": "patches_factory/Leads/Pet",
-   "pad": "patches_3rdparty/Stefan Singer/Pads/Trance Pad 2",
-   "counter": "patches_factory/Leads/Fairy"
-  }
- },
- {
-  "file": "002_acid_919308.mp4",
-  "style_id": "acid",
-  "seed": 919308,
-  "title": "TOXIC CITY",
-  "key": "E dorian",
-  "lead_patch": "surge:Journey To The Center Of The Surge",
-  "bass_patch": "acid_303",
-  "kick": "techno",
-  "world": "arcade",
-  "inserts": [
-   "bounce",
-   "runner"
+   "runner",
+   "breakout"
   ],
   "outro": "rate",
-  "fingerprint": "acid|surge:Journey To The Center Of The Surge|acid_303|techno|E dorian|minor_plagal",
-  "hook": "c2c879519d1c",
+  "fingerprint": "hardstyle|surge:Alias Supersaw|kick tail (hs_euphoric)|hs_euphoric|F# harmonic minor|euphoric",
+  "hook": "32c5f9420b3f",
   "surge": {
-   "lead": "patches_3rdparty/Jacky Ligon/Leads/Journey To The Center Of The Surge",
-   "alt": "patches_factory/Leads/Butter",
-   "chords": "patches_3rdparty/Giana Brotherz/Organs/Charmy Organ",
-   "pad": "patches_factory/Pads/Well",
-   "counter": "patches_factory/Leads/Somewhere MW"
+   "lead": "patches_3rdparty/Luna/Leads/Alias Supersaw",
+   "alt": "patches_factory/Leads/Sync Lead",
+   "chords": "patches_3rdparty/Lopyt/Plucks/Supersaw Pluck",
+   "pad": "patches_3rdparty/qb/Pads/Muffled Air",
+   "counter": "patches_3rdparty/Lopyt/Polysynths/Synth Keys"
   }
  },
  {
-  "file": "003_dnb_liquid_50183.mp4",
+  "file": "003_future_bass_3411.mp4",
+  "style_id": "future_bass",
+  "seed": 3411,
+  "title": "PRISM SIGNAL",
+  "key": "D lydian",
+  "lead_patch": "surge:Genesis-y Lead",
+  "bass_patch": "@808",
+  "kick": "trap",
+  "world": "neon_drive",
+  "inserts": [
+   "dancer",
+   "bounce"
+  ],
+  "outro": "question",
+  "fingerprint": "future_bass|surge:Genesis-y Lead|@808|trap|D lydian|axis_major",
+  "hook": "20de26d25cf6",
+  "surge": {
+   "lead": "patches_3rdparty/Luna/Leads/Genesis-y Lead",
+   "alt": "patches_factory/Leads/Saw Octaves",
+   "big": "patches_factory/Polysynths/Hugeness",
+   "chords": "patches_3rdparty/Luna/Keys/Rave Keys",
+   "pad": "patches_3rdparty/Kinsey Dulcet/Pads/Pointillism"
+  }
+ },
+ {
+  "file": "004_dnb_liquid_3519.mp4",
   "style_id": "dnb_liquid",
-  "seed": 50183,
-  "title": "BLUE CITY",
-  "key": "A dorian",
-  "lead_patch": "vox_lead",
-  "bass_patch": "@reese",
+  "seed": 3519,
+  "title": "FLOW CITY",
+  "key": "B dorian",
+  "lead_patch": "surge:Alias Supersaw",
+  "bass_patch": "@square",
   "kick": "punch",
   "world": "deep_space",
   "inserts": [
    "breakout",
-   "bounce"
+   "tape"
   ],
-  "outro": "tomorrow",
-  "fingerprint": "dnb_liquid|vox_lead|@reese|punch|A dorian|liquid_dnb_2",
-  "hook": "b70ff7183196",
+  "outro": "rate",
+  "fingerprint": "dnb_liquid|surge:Alias Supersaw|@square|punch|B dorian|space_suspended",
+  "hook": "7c8c225d684a",
   "surge": {
-   "alt": "patches_factory/Plucks/Wire",
-   "chords": "patches_3rdparty/Malfunction/Bells/Impact",
-   "pad": "patches_3rdparty/Slowboat/Atmospheres/Harmonic Blast",
-   "counter": "patches_3rdparty/Landosonic/Keys/Intrication 1"
+   "lead": "patches_3rdparty/Luna/Leads/Alias Supersaw",
+   "alt": "patches_factory/Leads/Saw Octaves",
+   "chords": "patches_factory/Plucks/Nice Pluck 1",
+   "pad": "patches_3rdparty/Nick Moritz/Pads/Nightmare",
+   "arp": "patches_3rdparty/Damon Armani/Plucks/Trance Pluck"
   }
  },
  {
-  "file": "004_rawstyle_80516.mp4",
-  "style_id": "rawstyle",
-  "seed": 80516,
-  "title": "HAVOC HEART",
-  "key": "C# minor",
-  "lead_patch": "hoover",
-  "bass_patch": "kick tail (hs_raw)",
-  "kick": "hs_raw",
-  "world": "rave",
+  "file": "005_trance_3623.mp4",
+  "style_id": "trance",
+  "seed": 3623,
+  "title": "ETERNAL DREAM",
+  "key": "D minor",
+  "lead_patch": "supersaw_lead",
+  "bass_patch": "offbeat_bass",
+  "kick": "909",
+  "world": "liquid",
   "inserts": [
-   "runner",
-   "bounce"
+   "chat",
+   "runner"
+  ],
+  "outro": "question",
+  "fingerprint": "trance|supersaw_lead|offbeat_bass|909|D minor|euphoric",
+  "hook": "9fea0afda378",
+  "surge": {
+   "big": "patches_3rdparty/Luna/Leads/96 Osc Supersaw",
+   "chords": "patches_factory/Plucks/Nice Pluck 2",
+   "pad": "patches_factory/Pads/Synth Choir MW O-Ah",
+   "arp": "patches_factory/Plucks/Saw Pluck"
+  }
+ },
+ {
+  "file": "007_synthwave_5101.mp4",
+  "style_id": "synthwave",
+  "seed": 5101,
+  "title": "LASER WAVES",
+  "key": "G dorian",
+  "lead_patch": "surge:Lyrical Flute",
+  "bass_patch": "moog_bass",
+  "kick": "909",
+  "world": "moonlight",
+  "inserts": [
+   "bounce",
+   "keys"
   ],
   "outro": "replay",
-  "fingerprint": "rawstyle|hoover|kick tail (hs_raw)|hs_raw|C# minor|dark_descent",
-  "hook": "4b3faab39b9a",
+  "fingerprint": "synthwave|surge:Lyrical Flute|moog_bass|909|G dorian|outrun",
+  "hook": "13534469d360",
   "surge": {
-   "alt": "patches_factory/Polysynths/Tarnce",
-   "arp": "patches_factory/Plucks/Square Pop",
-   "counter": "patches_3rdparty/Inigo Kennedy/Keys/Thoughts 7"
+   "lead": "patches_3rdparty/Aleksey Zhehanov/Winds/Lyrical Flute",
+   "chords": "patches_factory/Brass/Toto Brass",
+   "pad": "patches_3rdparty/Lopyt/Strings/Violin Section",
+   "counter": "patches_3rdparty/Bluelight/Keys/Digi Piano"
   }
  },
  {
-  "file": "005_dnb_energy_805693.mp4",
-  "style_id": "dnb_energy",
-  "seed": 805693,
-  "title": "SHOCK CITY",
-  "key": "B minor",
-  "lead_patch": "surge:Icy Pluck",
-  "bass_patch": "@neuro",
-  "kick": "punch",
-  "world": "neon_drive",
+  "file": "008_future_bass_4051.mp4",
+  "style_id": "future_bass",
+  "seed": 4051,
+  "title": "SUGAR WAVES",
+  "key": "G major",
+  "lead_patch": "surge:Vocal-like Thing",
+  "bass_patch": "@808",
+  "kick": "trap",
+  "world": "ocean",
   "inserts": [
    "shooter",
+   "tape"
+  ],
+  "outro": "replay",
+  "fingerprint": "future_bass|surge:Vocal-like Thing|@808|trap|G major|royal_road",
+  "hook": "faf627ba3708",
+  "surge": {
+   "lead": "patches_3rdparty/Lopyt/Voices/Vocal-like Thing",
+   "alt": "patches_factory/Leads/Vocal Lead",
+   "big": "patches_3rdparty/Xenofish/Leads/Saturn Saw",
+   "arp": "patches_3rdparty/Vincent Zauhar/Plucks/Super Pluck"
+  }
+ },
+ {
+  "file": "009_dnb_liquid_5207.mp4",
+  "style_id": "dnb_liquid",
+  "seed": 5207,
+  "title": "LIQUID WAVES",
+  "key": "G minor",
+  "lead_patch": "surge:Analog Brass",
+  "bass_patch": "@reese",
+  "kick": "punch",
+  "world": "aurora",
+  "inserts": [
+   "chat",
+   "runner"
+  ],
+  "outro": "question",
+  "fingerprint": "dnb_liquid|surge:Analog Brass|@reese|punch|G minor|space_suspended",
+  "hook": "0bc984f5696f",
+  "surge": {
+   "lead": "patches_3rdparty/Luna/Brass/Analog Brass",
+   "alt": "patches_3rdparty/Bluelight/Brass/Horns 1",
+   "chords": "patches_3rdparty/Lopyt/Plucks/Supersaw Pluck",
+   "pad": "patches_factory/Pads/Pad 1"
+  }
+ },
+ {
+  "file": "010_synthwave_3947.mp4",
+  "style_id": "synthwave",
+  "seed": 3947,
+  "title": "DRIVE PULSE",
+  "key": "A dorian",
+  "lead_patch": "surge:Vocal Lead",
+  "bass_patch": "synthwave_bass",
+  "kick": "909",
+  "world": "lava_lamp",
+  "inserts": [
+   "keys",
+   "bounce"
+  ],
+  "outro": "question",
+  "fingerprint": "synthwave|surge:Vocal Lead|synthwave_bass|909|A dorian|axis_minor",
+  "hook": "faf857ffef42",
+  "surge": {
+   "lead": "patches_factory/Leads/Vocal Lead",
+   "alt": "patches_3rdparty/Kyurumi/Leads/Normal Lead",
+   "pad": "patches_3rdparty/Inigo Kennedy/Pads/Winter 7"
+  }
+ },
+ {
+  "file": "011_ambient_space_5313.mp4",
+  "style_id": "ambient_space",
+  "seed": 5313,
+  "title": "STARDUST MOTION",
+  "key": "B minor",
+  "lead_patch": "surge:Euphonium",
+  "bass_patch": "sub_bass",
+  "kick": "soft",
+  "world": "arcade",
+  "inserts": [
+   "dancer",
    "breakout"
   ],
   "outro": "question",
-  "fingerprint": "dnb_energy|surge:Icy Pluck|@neuro|punch|B minor|dark_descent",
-  "hook": "cc7bbecb4166",
+  "fingerprint": "ambient_space|surge:Euphonium|sub_bass|soft|B minor|lydian_float",
+  "hook": "724e19a249e6",
   "surge": {
-   "lead": "patches_3rdparty/Zoozither/Plucks/Icy Pluck",
-   "alt": "patches_factory/Polysynths/Dirty Hole",
-   "chords": "patches_3rdparty/Jacky Ligon/Plucks/Porta Mod",
-   "pad": "patches_3rdparty/Bluelight/Pads/Obie",
-   "arp": "patches_factory/Plucks/Nice Pluck 2",
-   "counter": "patches_3rdparty/Psiome Send Sound/Synths/Symbiosis"
+   "lead": "patches_3rdparty/Aleksey Zhehanov/Brass/Euphonium",
+   "alt": "patches_3rdparty/Aleksey Zhehanov/Brass/Trumpet Ensemble",
+   "pad": "patches_factory/Pads/MKS-70 Warm Pad",
+   "arp": "patches_factory/Plucks/Nice Pluck 5",
+   "counter": "patches_3rdparty/Damon Armani/Plucks/Trance Pluck"
+  }
+ },
+ {
+  "file": "012_synthwave_5419.mp4",
+  "style_id": "synthwave",
+  "seed": 5419,
+  "title": "SUNSET RUNNER",
+  "key": "E minor",
+  "lead_patch": "surge:Horns 1",
+  "bass_patch": "synthwave_bass",
+  "kick": "909",
+  "world": "rave",
+  "inserts": [
+   "shooter",
+   "chat"
+  ],
+  "outro": "rate",
+  "fingerprint": "synthwave|surge:Horns 1|synthwave_bass|909|E minor|dorian_vamp",
+  "hook": "fa9260323c36",
+  "surge": {
+   "lead": "patches_3rdparty/Bluelight/Brass/Horns 1",
+   "alt": "patches_factory/Brass/JX-10 Double Brass"
+  }
+ },
+ {
+  "file": "006_dnb_energy_3839.mp4",
+  "style_id": "dnb_energy",
+  "seed": 3839,
+  "title": "ION DREAM",
+  "key": "D harmonic minor",
+  "lead_patch": "surge:Trance Pluck",
+  "bass_patch": "@reese",
+  "kick": "punch",
+  "world": "canyon",
+  "inserts": [
+   "tape",
+   "runner"
+  ],
+  "outro": "rate",
+  "fingerprint": "dnb_energy|surge:Trance Pluck|@reese|punch|D harmonic minor|andalusian",
+  "hook": "8b07cbf3df27",
+  "surge": {
+   "lead": "patches_3rdparty/Damon Armani/Plucks/Trance Pluck",
+   "big": "patches_3rdparty/Luna/Leads/Alias Supersaw",
+   "chords": "patches_3rdparty/Lopyt/Plucks/Supersaw Pluck",
+   "arp": "patches_3rdparty/Vospi/Plucks/Popcorn Pluck",
+   "counter": "patches_factory/Plucks/Nice Pluck 1"
   }
  }
 ]
