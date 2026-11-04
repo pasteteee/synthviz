@@ -44,6 +44,9 @@ def main(argv=None):
     ap.add_argument("--insert-mode", default="drops", help="drops | all | none")
     ap.add_argument("--outro", help="question | rate | replay | loop")
     ap.add_argument("--segments", help="preview ranges, e.g. 8.5-18.5,31-41")
+    # external track (e.g. made by Lyria via tools/gemini_music.py): visuals follow its analysed events
+    ap.add_argument("--audio", help="render visuals for this audio file instead of composing a track")
+    ap.add_argument("--window", help="cut of --audio in seconds, e.g. 31.5-90.6")
     a = ap.parse_args(argv)
 
     if a.list:
@@ -85,12 +88,20 @@ def main(argv=None):
             print(f"{song.title} | {song.events['key']} | {song.bpm} BPM | {' - '.join(song.events['progression'])} -> {out.with_suffix('.wav')}")
             continue
         from .video import render_video
-        render_video(style, seed=seed, out=out, scene=a.scene, alt_scene=a.alt_scene, fps=a.fps,
+        ext = None
+        if a.audio:
+            from .external import song_from_audio
+            w0, w1 = (map(float, a.window.split("-")) if a.window else (0.0, None))
+            ext = song_from_audio(a.audio, t0=w0, t1=w1, title=a.title or Path(a.audio).stem.upper(), style=style,
+                                  bpm=a.bpm)
+        render_video(style, seed=seed, song=ext, out=out, scene=a.scene, alt_scene=a.alt_scene, fps=a.fps,
                      overlay=not a.no_overlay, song_kw=kw, crf=a.crf, world=a.world or (looks[j]["world"] if looks else None),
                      inserts=a.inserts.split(",") if a.inserts else (looks[j]["inserts"] if looks else None),
                      insert_mode=a.insert_mode,
                      outro=a.outro or (looks[j]["outro"] if looks else None),
                      segments=[tuple(map(float, x.split("-"))) for x in a.segments.split(",")] if a.segments else None)
+        if a.audio:
+            break
 
 
 if __name__ == "__main__":

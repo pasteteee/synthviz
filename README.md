@@ -43,3 +43,12 @@ before; `visuals/variety.py` avoids repeating worlds, game pairs and outros.
 - `skill/SKILL.md`: the Claude skill that runs the whole pipeline.
 
 Samples are CC0 (see `synthviz/samples/CREDITS.md`).
+
+## External tracks (Gemini / Lyria)
+Visuals can also follow a track made elsewhere: `synthviz/external.py` estimates the beat grid, kicks/snares/hats,
+bass and lead lines, chords, key and sections from the audio, so the whole visual pipeline runs unchanged.
+```bash
+GEMINI_API_KEY=... python tools/gemini_music.py --model lyria-3.5 --out music/track \
+    --prompt "Energetic instrumental future bass, F minor, big supersaw drop, no vocals"
+python -m synthviz --audio music/track_0.mp3 --window 31.5-90.6 --style future_bass --title "SKYLINE PULSE" --out out/v.mp4
+```
