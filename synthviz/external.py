@@ -201,9 +201,20 @@ def song_from_audio(path, t0=0.0, t1=None, title="UNTITLED", style="future_bass"
             name, en = "break", 0.35
         t_ = 0.0 if not out else ph + b * bar
         out.append(dict(name=name, t=float(t_), dur=float(ph + (b + nb) * bar - t_), energy=en))
-    # short in-between sections (< 2 bars) are fills, not sections: fold into the previous one
+    # a short loud blip (< 3 bars) right before a build is part of that build
+    for i in range(len(out) - 2, -1, -1):
+        if out[i]["name"] in ("drop", "drop2") and out[i]["dur"] < 3 * bar - 1e-6 and out[i + 1]["name"] == "build":
+            out[i + 1]["dur"] += out[i]["dur"]; out[i + 1]["t"] = out[i]["t"]
+            del out[i]
+    k = 0
+    for s_ in out:                        # renumber drops
+        if s_["name"] in ("drop", "drop2"):
+            s_["name"] = "drop" if k == 0 else "drop2"; k += 1
+    # short in-between parts (< 3 bars) that don't lead into a drop are fills, not sections:
+    # fold them into the previous section (a short build right before a drop stays)
     for i in range(len(out) - 2, 0, -1):
-        if out[i]["dur"] < 3 * bar - 1e-6 and out[i]["name"] in ("build", "break"):
+        if out[i]["dur"] < 3 * bar - 1e-6 and out[i]["name"] in ("build", "break") and \
+                not (out[i]["name"] == "build" and out[i + 1]["name"] in ("drop", "drop2")):
             out[i - 1]["dur"] += out[i]["dur"]
             del out[i]
             if out[i]["name"] == out[i - 1]["name"] or (out[i]["name"] == "drop2" and out[i - 1]["name"] in ("drop", "drop2")):
