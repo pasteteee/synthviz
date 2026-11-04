@@ -26,10 +26,13 @@ from pathlib import Path
 
 import numpy as np
 from numba import njit, prange
+from scipy.ndimage import gaussian_filter, maximum_filter
 from PIL import Image, ImageDraw, ImageFont
 
 from ..composer import save_wav
 from .features import Features
+from .notes import NoteRibbon
+from .captions import Captions
 
 FONT_DIR = Path(__file__).resolve().parent.parent / "fonts"
 
@@ -315,6 +318,17 @@ def render_marble(song, out, seed=0, fps=30, W=1080, H=1920, crf=20, palettes=No
     ev = song.events
     sub = f"{ev.get('style', '')} · {ev['bpm']:.0f} bpm · {ev['key'].lower()}"
     text = TextLayer(W, H, song.title, sub, ink, accent)
+    # the v4 note ribbon (melody, bass, chords, drum lanes) + kinetic captions on a dark ink panel
+    import colorsys
+    hue = colorsys.rgb_to_hsv(*[c / 255 for c in accent])[0]
+    ribbon = NoteRibbon(F, W, H)
+    caps = Captions(F, W, H, song.title, hue, ribbon=ribbon, outro=rng.choice(["question", "rate", "replay"]),
+                    subtitle=sub)
+    by0, by1 = int(ribbon.LABEL_Y - 70), int(ribbon.DRUM_Y + 46)
+    fy = np.minimum(1.0, np.minimum(np.arange(by0, by1) - by0, by1 - np.arange(by0, by1)) / 18.0)[:, None, None]
+    ink_f = np.array(ink, np.float32)[None, None, :]
+    buf = np.zeros((H, W, 3), np.float32)
+    cap_l = np.zeros((H, W, 3), np.uint8)
     drops = [s for s in F.sections if s["name"] in ("drop", "drop2")]
     out = Path(out)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -341,11 +355,26 @@ def render_marble(song, out, seed=0, fps=30, W=1080, H=1920, crf=20, palettes=No
         ph += (0.6 + 2.2 * energy) / fps
         _paint(frame, W, H, ops, n, score.cols, score.paper(t), zoom, 4 + 16 * bass * energy, ph * 2.0,
                10 * math.sin(t * 0.35))
-        # text: title card, DROP slams, small tag
-        if t < 2.6:
-            text.draw(frame, "title", 1.0 - _ease_out((t - 2.0) / 0.6))
-        else:
-            text.draw(frame, "tag", min(1.0, (t - 2.6) / 0.5))
+        # note ribbon on an ink panel
+        ui = min(1.0, t / 0.8) * (1.0 - _ease_out((t - caps.outro_t) / 0.6))
+        if ui > 0.01:
+            band = frame[by0:by1].astype(np.float32)
+            band = band + (ink_f - band) * (0.9 * fy * ui)
+            buf[by0 - 40:by1 + 40] = 0
+            ribbon.draw(buf, i, t, hue, ui)
+            light = 255.0 * (1.0 - np.exp(-2.6 * buf[by0:by1]))
+            frame[by0:by1] = np.clip(band + light, 0, 255).astype(np.uint8)
+        # captions are glow-on-dark: draw them on black, then lay an ink shadow under them on the paper
+        cap_l[:] = 0
+        caps.draw(cap_l, i, t, hue, 1.0)
+        a4 = cap_l[::4, ::4].max(axis=2).astype(np.float32) / 255.0
+        if a4.max() > 0.02:
+            sh = gaussian_filter(maximum_filter(a4, size=5), 2.0)
+            sh = np.clip(sh * 2.2, 0, 0.82)
+            sh = np.repeat(np.repeat(sh, 4, 0), 4, 1)[:H, :W, None]
+            f_ = frame.astype(np.float32)
+            f_ = f_ + (ink_f - f_) * sh
+            frame[:] = np.clip(f_ + cap_l, 0, 255).astype(np.uint8)
         for s in drops:
             age = t - s["t"]
             if 0 <= age < 0.9:
