@@ -52,3 +52,8 @@ GEMINI_API_KEY=... python tools/gemini_music.py --model lyria-3.5 --out music/tr
     --prompt "Energetic instrumental future bass, F minor, big supersaw drop, no vocals"
 python -m synthviz --audio music/track_0.mp3 --window 31.5-90.6 --style future_bass --title "SKYLINE PULSE" --out out/v.mp4
 ```
+
+## Marble look (bright)
+`--look marble` swaps the dark neon pipeline for a bright paper-marbling (ebru) renderer (`synthviz/visuals/marble.py`):
+kicks drop ink rings, snares comb them into feathers, lead notes drop colour by pitch, the drop floods the sheet.
+`--palettes acid,bubblegum` (candy, acid, tropical, sunset, bubblegum, lime, ultra); random pair per seed otherwise.

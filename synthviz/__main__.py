@@ -47,6 +47,8 @@ def main(argv=None):
     # external track (e.g. made by Lyria via tools/gemini_music.py): visuals follow its analysed events
     ap.add_argument("--audio", help="render visuals for this audio file instead of composing a track")
     ap.add_argument("--window", help="cut of --audio in seconds, e.g. 31.5-90.6")
+    ap.add_argument("--look", default="v4", help="v4 (neon worlds) | marble (bright paper-marbling renderer)")
+    ap.add_argument("--palettes", help="marble: two palette names, e.g. acid,bubblegum")
     a = ap.parse_args(argv)
 
     if a.list:
@@ -94,6 +96,13 @@ def main(argv=None):
             w0, w1 = (map(float, a.window.split("-")) if a.window else (0.0, None))
             ext = song_from_audio(a.audio, t0=w0, t1=w1, title=a.title or Path(a.audio).stem.upper(), style=style,
                                   bpm=a.bpm)
+        if a.look == "marble":
+            from .composer import compose as _compose
+            from .visuals.marble import render_marble
+            song = ext or _compose(style, seed=seed, **kw)
+            render_marble(song, out, seed=seed, fps=a.fps, crf=a.crf,
+                          palettes=a.palettes.split(",") if a.palettes else None)
+            continue
         render_video(style, seed=seed, song=ext, out=out, scene=a.scene, alt_scene=a.alt_scene, fps=a.fps,
                      overlay=not a.no_overlay, song_kw=kw, crf=a.crf, world=a.world or (looks[j]["world"] if looks else None),
                      inserts=a.inserts.split(",") if a.inserts else (looks[j]["inserts"] if looks else None),

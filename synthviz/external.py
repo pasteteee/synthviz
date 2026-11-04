@@ -201,11 +201,15 @@ def song_from_audio(path, t0=0.0, t1=None, title="UNTITLED", style="future_bass"
             name, en = "break", 0.35
         t_ = 0.0 if not out else ph + b * bar
         out.append(dict(name=name, t=float(t_), dur=float(ph + (b + nb) * bar - t_), energy=en))
-    # a short loud blip (< 3 bars) right before a build is part of that build
-    for i in range(len(out) - 2, -1, -1):
-        if out[i]["name"] in ("drop", "drop2") and out[i]["dur"] < 3 * bar - 1e-6 and out[i + 1]["name"] == "build":
-            out[i + 1]["dur"] += out[i]["dur"]; out[i + 1]["t"] = out[i]["t"]
-            del out[i]
+    # drop -> short build -> drop, with the first drop short (< 3 bars): one drop with a dip inside
+    i = 0
+    while i + 2 < len(out):
+        if out[i]["name"] in ("drop", "drop2") and out[i]["dur"] < 3 * bar - 1e-6 and \
+                out[i + 1]["name"] == "build" and out[i + 1]["dur"] < 3 * bar - 1e-6 and out[i + 2]["name"] in ("drop", "drop2"):
+            out[i]["dur"] += out[i + 1]["dur"] + out[i + 2]["dur"]
+            del out[i + 1: i + 3]
+            continue
+        i += 1
     k = 0
     for s_ in out:                        # renumber drops
         if s_["name"] in ("drop", "drop2"):
